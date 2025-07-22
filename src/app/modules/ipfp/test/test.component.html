@@ -1,0 +1,106 @@
+<mat-drawer-container
+    class="bg-card flex min-w-0 flex-auto flex-col dark:bg-transparent sm:absolute sm:inset-0 sm:overflow-hidden">
+    <!-- Main Content -->
+    <div mat-drawer-content class="flex min-w-0 flex-auto flex-col">
+        <!-- Header -->
+        <div class="relative flex flex-col px-6 py-8 sm:flex-row sm:items-center sm:justify-between md:px-8">
+
+        </div>
+        <!-- Second Line -->
+        <div class="flex items-center justify-between px-6 py-4 md:px-8">
+
+        </div>
+        <!-- Resource Table -->
+        <div class="flex flex-auto overflow-hidden">
+            <div class="flex flex-auto flex-col overflow-hidden sm:mb-18 sm:overflow-y-auto">
+                <ng-container>
+                    <div>
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full table-auto whitespace-nowrap">
+                                <thead>
+                                <tr class="bg-gray-200 text-gray-600">
+                                    <th class="px-6 py-3 text-left">Candidat</th>
+                                    <th class="px-6 py-3 text-left">Titre</th>
+                                    <th class="px-6 py-3 text-left">Étape</th>
+                                    <th class="px-6 py-3 text-left">TJM</th>
+                                    <th class="px-6 py-3 text-left">Salaire</th>
+                                    <th class="px-6 py-3 text-left">Coordonnées</th>
+                                    <th class="px-6 py-3 text-left">MAJ</th>
+                                    <th class="px-6 py-3 text-left">Manager</th>
+                                    <th class="px-6 py-3 text-left">CV</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                <!-- Dans le tbody, ajustez selon les champs réels de Candidate -->
+                                <tr class="border-b hover:bg-gray-100">
+                                    <td class="px-6 py-4">
+                                        <div class="flex items-center gap-2">
+                                            <img src="images/avatars/male-04.jpg" alt="Avatar"
+                                                 class="w-10 h-10 rounded-full">
+                                            <div>
+                                                <div>{{ candidate.email }}</div>
+                                                <div class="text-xs text-gray-500">{{ candidate.type || '#45;' }}</div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4">
+                                        <div>
+                                            <div>{{ candidate.title || '---' }}</div>
+                                            <div class="text-xs text-gray-500 truncate-skills">
+                                                {{ candidate.skills || '---' }}
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4">
+                                        <div class="flex items-center gap-2">
+                                            <span class="w-4 h-4 rounded-full"
+                                                  [ngStyle]="{ 'background-color': '#ff9800' }"></span>
+                                            <span>{{ candidate.status || 'à appeler' }}</span>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4">{{ candidate.tjm || '---' }}</td>
+                                    <td class="px-6 py-4">{{ candidate.currentSalary || '---' }}</td>
+                                    <td class="px-6 py-4">
+                                        <div class="flex items-center gap-2">
+                                            <mat-icon svgIcon="heroicons_outline:at-symbol"></mat-icon>
+                                            <mat-icon svgIcon="heroicons_outline:phone"></mat-icon>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4">{{ '---' }}</td>
+                                    <!-- Ajouter date de mise à jour si disponible -->
+                                    <td class="px-6 py-4">{{ candidate.manager || '---' }}</td>
+                                    <td class="px-4 py-2">
+                                        <button
+                                            matTooltip="CV originale"
+                                            class="text-blue-600 hover:underline"
+                                        >
+                                            <mat-icon svgIcon="heroicons_outline:document"
+                                                      style="cursor: pointer"></mat-icon>
+                                        </button>
+                                        <button
+                                            matTooltip="CV formaté"
+                                            class="text-blue-600 hover:underline"
+                                        >
+                                            <mat-icon svgIcon="heroicons_outline:document-check"
+                                                      style="cursor: pointer"></mat-icon>
+                                        </button>
+                                    </td>
+                                </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+
+                    </div>
+                </ng-container>
+
+                <!-- No candidate Template -->
+                <ng-template #noCandidates>
+                    <div class="border-t p-8 text-center text-4xl font-semibold tracking-tight sm:p-16">
+                        Pas de candidats trouvées !
+                    </div>
+                </ng-template>
+            </div>
+        </div>
+    </div>
+</mat-drawer-container>
