@@ -1,0 +1,43 @@
+.step-button {
+    padding: 0.5rem 1rem;
+    border: 2px solid transparent;
+    border-radius: 9999px;
+    background-color: #f3f4f6;
+    color: #374151;
+    font-weight: 600;
+    transition: all 0.3s ease;
+
+    &:hover {
+        background-color: #e5e7eb;
+    }
+
+    &.step-active {
+        background-color: #3b82f6;
+        color: #fff;
+        border-color: #3b82f6;
+    }
+}
+
+.action-button {
+    width: 100%;
+    margin-top: 1rem;
+    padding: 0.75rem;
+    font-weight: 600;
+    background: linear-gradient(to right, #3b82f6, #2563eb);
+    color: white;
+    border-radius: 0.5rem;
+    box-shadow: 0 5px 15px rgba(59, 130, 246, 0.3);
+    transition: transform 0.2s ease;
+
+    &:hover {
+        transform: translateY(-2px);
+        background: linear-gradient(to right, #2563eb, #1d4ed8);
+    }
+}
+mat-form-field {
+    margin-bottom: 12px !important; /* Réduction de l'espace vertical */
+}
+
+.action-button {
+    margin-top: 12px !important;
+}

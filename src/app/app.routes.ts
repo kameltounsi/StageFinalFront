@@ -41,6 +41,11 @@ export const appRoutes: Route[] = [
                 loadChildren: () => import('app/modules/auth/verify-code/verify-code.routes')
             },
 
+            {
+                path: 'reset-flow',
+                loadChildren: () => import('app/modules/auth/reset-flow/reset-flow.routes').then(m => m.ResetFlowModule)
+            }
+,
             {path: 'sign-in', loadChildren: () => import('app/modules/auth/sign-in/sign-in.routes')},
             {path: 'sign-up', loadChildren: () => import('app/modules/auth/sign-up/sign-up.routes')},
             {path: '', pathMatch : 'full', redirectTo: 'dashboards/project'},
