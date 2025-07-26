@@ -29,17 +29,24 @@ export class AuthService {
     // -----------------------------------------------------------------------------------------------------
     // @ Public methods
     // -----------------------------------------------------------------------------------------------------
+/*
 
-    /**
      * Forgot password
      *
      * @param email
-     */
+
     forgotPassword(email: string): Observable<string> {
         return this._httpClient.post('http://localhost:8089/api/auth/forgot-password', null, {
             params: { email },
             responseType: 'text'
         });
+    }*/
+    forgotPassword(email: string): Observable<string> {
+        return this._httpClient.post(
+            'http://localhost:8089/api/auth/forgot-password',
+            { email }, // corps de la requête en JSON
+            { responseType: 'text' }
+        );
     }
 
 

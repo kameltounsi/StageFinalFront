@@ -90,8 +90,6 @@ export class AuthSignUpComponent implements OnInit {
         formData.append('fullname', this.signUpForm.get('name').value);
         formData.append('email', this.signUpForm.get('email').value);
         formData.append('password', this.signUpForm.get('password').value);
-        formData.append('company', this.signUpForm.get('company').value || '');
-
         if (this.selectedImageFile) {
             formData.append('image', this.selectedImageFile);
         }
