@@ -25,6 +25,9 @@ import { CompactLayoutComponent } from './layouts/vertical/compact/compact.compo
 import { DenseLayoutComponent } from './layouts/vertical/dense/dense.component';
 import { FuturisticLayoutComponent } from './layouts/vertical/futuristic/futuristic.component';
 import { ThinLayoutComponent } from './layouts/vertical/thin/thin.component';
+import { FuseNavigationService } from '@fuse/components/navigation';
+import { adminNavigation } from 'app/mock-api/common/admin-navigation.data';
+import {defaultNavigation} from "../../navigation/data";
 
 @Component({
     selector: 'layout',
@@ -57,8 +60,10 @@ export class LayoutComponent implements OnInit, OnDestroy {
     /**
      * Constructor
      */
+
     constructor(
         private _activatedRoute: ActivatedRoute,
+private _fuseNavigationService: FuseNavigationService,
         @Inject(DOCUMENT) private _document: any,
         private _renderer2: Renderer2,
         private _router: Router,
@@ -75,6 +80,15 @@ export class LayoutComponent implements OnInit, OnDestroy {
      * On init
      */
     ngOnInit(): void {
+        const user = JSON.parse(localStorage.getItem('user')!);
+
+        if (user?.role === 'ADMIN') {
+            this._fuseNavigationService.storeNavigation('main', adminNavigation);
+        } else {
+            this._fuseNavigationService.storeNavigation('main', defaultNavigation);
+
+        }
+
         // Set the theme and scheme based on the configuration
         combineLatest([
             this._fuseConfigService.config$,

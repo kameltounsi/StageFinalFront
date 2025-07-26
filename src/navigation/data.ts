@@ -510,4 +510,58 @@ export const horizontalNavigation: FuseNavigationItem[] = [
         children: [], // This will be filled from defaultNavigation so we don't have to manage multiple sets of the same navigation
     },
 ];
+export const adminNavigation: FuseNavigationItem[] = [
+    {
+        id: 'admin',
+        title: 'Administration',
+        subtitle: 'Admin tools',
+        type: 'group',
+        icon: 'heroicons_outline:cog',
+        children: [
+            {
+                id: 'admin.users',
+                title: 'Manage Users',
+                type: 'basic',
+                icon: 'heroicons_outline:user-group',
+                link: '/admin/users',
+            },
+            {
+                id: 'admin.courses',
+                title: 'Manage Courses',
+                type: 'basic',
+                icon: 'heroicons_outline:book-open',
+                link: '/admin/courses',
+            },
+            {
+                id: 'admin.schedule',
+                title: 'Manage Schedule',
+                type: 'basic',
+                icon: 'heroicons_outline:calendar-days',
+                link: '/admin/schedule',
+            },
+            {
+                id: 'admin.attendance',
+                title: 'Attendance',
+                type: 'basic',
+                icon: 'heroicons_outline:clipboard-document-check',
+                link: '/admin/attendance',
+            },
+            {
+                id: 'admin.grades',
+                title: 'Grades',
+                type: 'basic',
+                icon: 'heroicons_outline:chart-bar',
+                link: '/admin/grades',
+            },
+            {
+                id: 'admin.documents',
+                title: 'Documents',
+                type: 'basic',
+                icon: 'heroicons_outline:document-text',
+                link: '/admin/documents',
+            },
+        ]
+    }
+];
+
  

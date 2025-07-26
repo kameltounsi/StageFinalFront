@@ -21,7 +21,8 @@ import { SearchComponent } from 'app/layout/common/search/search.component';
 import { ShortcutsComponent } from 'app/layout/common/shortcuts/shortcuts.component';
 import { UserComponent } from 'app/layout/common/user/user.component';
 import { Subject, takeUntil } from 'rxjs';
-
+import { adminNavigation } from 'app/mock-api/common/admin-navigation.data';
+import {defaultNavigation} from "../../../../../navigation/data";
 @Component({
     selector: 'classy-layout',
     templateUrl: './classy.component.html',
@@ -81,11 +82,16 @@ export class ClassyLayoutComponent implements OnInit, OnDestroy {
      */
     ngOnInit(): void {
         // Subscribe to navigation data
-        this._navigationService.navigation$
-            .pipe(takeUntil(this._unsubscribeAll))
-            .subscribe((navigation: Navigation) => {
-                this.navigation = navigation;
-            });
+        const user = JSON.parse(localStorage.getItem('user')!);
+        const navigationItems = user?.role === 'ADMIN' ? adminNavigation : defaultNavigation;
+
+        this.navigation = {
+            default: navigationItems,
+            compact: navigationItems,
+            futuristic: navigationItems,
+            horizontal: navigationItems
+        };
+
 
         // Subscribe to the user service
         this._userService.user$
