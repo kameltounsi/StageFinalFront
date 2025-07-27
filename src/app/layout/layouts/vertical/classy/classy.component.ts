@@ -23,6 +23,9 @@ import { UserComponent } from 'app/layout/common/user/user.component';
 import { Subject, takeUntil } from 'rxjs';
 import { adminNavigation } from 'app/mock-api/common/admin-navigation.data';
 import {defaultNavigation} from "../../../../../navigation/data";
+import {trainerNavigation} from "app/mock-api/common/trainer-navigation.data";
+import {studentNavigation} from "app/mock-api/common/student-navigation.data";
+
 @Component({
     selector: 'classy-layout',
     templateUrl: './classy.component.html',
@@ -81,9 +84,9 @@ export class ClassyLayoutComponent implements OnInit, OnDestroy {
      * On init
      */
     ngOnInit(): void {
-        // Subscribe to navigation data
-        const user = JSON.parse(localStorage.getItem('user')!);
-        const navigationItems = user?.role === 'ADMIN' ? adminNavigation : defaultNavigation;
+
+       // const user = JSON.parse(localStorage.getItem('user')!);
+       /* const navigationItems = user?.role === 'ADMIN' ? adminNavigation : defaultNavigation;
 
         this.navigation = {
             default: navigationItems,
@@ -91,6 +94,27 @@ export class ClassyLayoutComponent implements OnInit, OnDestroy {
             futuristic: navigationItems,
             horizontal: navigationItems
         };
+*/
+        const user = JSON.parse(localStorage.getItem('user')!);
+        let navigationData: Navigation;
+
+        switch (user?.role) {
+            case 'ADMIN':
+                navigationData = adminNavigation;
+                break;
+            case 'TRAINER':
+                navigationData = trainerNavigation;
+                break;
+            case 'STUDENT':
+                navigationData = studentNavigation;
+                break;
+            default:
+                navigationData = studentNavigation; // ou defaultNavigation si défini
+        }
+
+        this.navigation = navigationData;
+
+
 
 
         // Subscribe to the user service

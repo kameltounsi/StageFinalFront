@@ -80,14 +80,7 @@ private _fuseNavigationService: FuseNavigationService,
      * On init
      */
     ngOnInit(): void {
-        const user = JSON.parse(localStorage.getItem('user')!);
 
-        if (user?.role === 'ADMIN') {
-            this._fuseNavigationService.storeNavigation('main', adminNavigation);
-        } else {
-            this._fuseNavigationService.storeNavigation('main', defaultNavigation);
-
-        }
 
         // Set the theme and scheme based on the configuration
         combineLatest([
