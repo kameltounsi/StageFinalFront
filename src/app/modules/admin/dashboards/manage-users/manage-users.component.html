@@ -1,0 +1,29 @@
+<div class="users-container">
+    <mat-card *ngFor="let user of pagedUsers" class="user-card">
+        <div class="user-card-content">
+            <div class="user-info">
+                <img [src]="user.profilePicture" alt="Avatar" class="avatar" />
+                <div class="user-texts">
+                    <h3 class="user-name">{{ user.fullName }}</h3>
+                    <p class="user-email">{{ user.email }}</p>
+                </div>
+            </div>
+            <div class="user-role">
+                <mat-form-field appearance="outline" class="role-field">
+                    <mat-label>Role</mat-label>
+                    <mat-select [value]="user.role" (selectionChange)="onRoleChange(user.id, $event.value)">
+                        <mat-option *ngFor="let role of roles" [value]="role">{{ role }}</mat-option>
+                    </mat-select>
+                </mat-form-field>
+            </div>
+        </div>
+    </mat-card>
+
+    <!-- Pagination -->
+    <mat-paginator
+            [length]="users.length"
+            [pageSize]="pageSize"
+            [pageSizeOptions]="[5]"
+            (page)="onPageChange($event)">
+    </mat-paginator>
+</div>

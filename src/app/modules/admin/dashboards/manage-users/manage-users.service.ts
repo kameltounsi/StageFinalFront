@@ -1,0 +1,38 @@
+import {HttpClient, HttpHeaders, HttpParams} from '@angular/common/http';
+import { Injectable } from '@angular/core';
+import { Observable } from 'rxjs';
+import {User} from "../../../../core/user/user.types";
+
+@Injectable({
+    providedIn: 'root'
+})
+export class ManageUsersService {
+    private baseUrl = 'http://localhost:8089/api/auth';
+
+    constructor(private http: HttpClient) {}
+
+    /**
+     * Récupérer tous les utilisateurs
+     */
+    getAllUsers(): Observable<User[]> {
+        const token = localStorage.getItem('access_token'); // ou le nom réel
+        const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
+        return this.http.get<User[]>('http://localhost:8089/api/auth/all', { headers });
+    }
+
+
+    /**
+     * Mettre à jour le rôle d’un utilisateur
+     * @param userId L'identifiant de l'utilisateur
+     * @param newRole Le nouveau rôle à attribuer (ADMIN, TRAINER, STUDENT)
+     */
+    updateUserRole(userId: number, newRole: string): Observable<any> {
+        const token = localStorage.getItem('access_token');
+        const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
+        const params = new HttpParams().set('role', newRole);
+
+        return this.http.put(`${this.baseUrl}/${userId}/role`, null, { headers, params });
+    }
+
+
+}

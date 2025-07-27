@@ -1,0 +1,70 @@
+/* Conteneur global */
+.users-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;          /* Centrage horizontal */
+    justify-content: flex-start;  /* Pour rester en haut mais centré */
+    padding: 40px 0;
+    width: 100%;
+    min-height: 100vh;
+    background-color: #f5f8fc;
+}
+
+/* Carte utilisateur */
+.user-card {
+    width: 600px;
+    margin-bottom: 20px;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    padding: 20px;
+    background-color: white;
+}
+
+/* Contenu de la carte */
+.user-card-content {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+}
+
+/* Info utilisateur */
+.user-info {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.avatar {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid #e0e0e0;
+}
+
+.user-texts {
+    display: flex;
+    flex-direction: column;
+}
+
+.user-name {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.user-email {
+    margin: 0;
+    font-size: 14px;
+    color: #666;
+}
+
+/* Sélecteur de rôle */
+.user-role {
+    min-width: 160px;
+}
+
+.role-field {
+    width: 100%;
+}

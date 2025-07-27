@@ -8,7 +8,7 @@ export const adminNavigation: Navigation = {
             title: 'Dashboard',
             type: 'basic',
             icon: 'heroicons_outline:home',
-            link: '/dashboard/project'
+            link: '/dashboards/project'
         },
         {
             id: 'admin.users',
