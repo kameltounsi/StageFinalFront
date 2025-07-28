@@ -14,25 +14,50 @@
                     alt="Profile Picture"
                     class="avatar-preview"
             />
-            <input type="file" accept="image/*" hidden (change)="onImageSelected($event)" />
-            <div class="avatar-overlay">
-                <mat-icon>camera_alt</mat-icon>
-            </div>
         </label>
+        <div class="avatar-overlay" [matMenuTriggerFor]="cameraMenu">
+            <mat-icon>camera_alt</mat-icon>
+        </div>
     </div>
+
+    <!-- Menu Camera -->
+    <mat-menu #cameraMenu="matMenu">
+        <button mat-menu-item (click)="openFilePicker()">
+            <mat-icon>upload</mat-icon>
+            <span>Upload a photo</span>
+        </button>
+        <button mat-menu-item (click)="openCamera()">
+            <mat-icon>photo_camera</mat-icon>
+            <span>Take a photo</span>
+        </button>
+    </mat-menu>
+
+    <!-- Input caché -->
+    <input id="fileInput" type="file" accept="image/*" hidden (change)="onImageSelected($event)" />
+
+    <!-- Vidéo caméra -->
+    <!-- Vidéo caméra -->
+    <div *ngIf="showCamera" class="camera-container">
+        <video #video autoplay></video>
+        <button mat-stroked-button color="primary" (click)="capturePhoto()">Capture</button>
+        <button mat-button color="warn" (click)="closeCamera()">Cancel</button>
+        <canvas #canvas hidden></canvas>
+    </div>
+
 
     <!-- Form -->
     <form [formGroup]="addUserForm" (ngSubmit)="onSubmit()" class="user-form">
-
         <!-- Full Name -->
         <mat-form-field appearance="outline" class="form-field">
             <mat-label>Full Name</mat-label>
             <input matInput formControlName="fullName" placeholder="Enter full name" />
-            <mat-error *ngIf="f['fullName'].touched && f['fullName'].hasError('required')">
-                Full name is required
-            </mat-error>
-            <mat-error *ngIf="f['fullName'].touched && f['fullName'].hasError('pattern')">
-                Only letters are allowed
+            <mat-error *ngIf="f['fullName'].invalid && (f['fullName'].touched || submitted)">
+                <ng-container *ngIf="f['fullName'].errors?.['required']">
+                    Full name is required
+                </ng-container>
+                <ng-container *ngIf="f['fullName'].errors?.['pattern']">
+                    Only letters are allowed
+                </ng-container>
             </mat-error>
         </mat-form-field>
 
@@ -40,15 +65,16 @@
         <mat-form-field appearance="outline" class="form-field">
             <mat-label>Email</mat-label>
             <input matInput type="email" formControlName="email" placeholder="Enter email" />
-            <mat-error *ngIf="f['email'].touched && f['email'].hasError('required')">
-                Email is required
-            </mat-error>
-            <mat-error *ngIf="f['email'].touched && f['email'].hasError('email')">
-                Please enter a valid email
-            </mat-error>
-            <!-- ✅ Vérification email unique -->
-            <mat-error *ngIf="f['email'].touched && f['email'].hasError('emailExists')">
-                This email is already in use
+            <mat-error *ngIf="f['email'].invalid && (f['email'].touched || submitted)">
+                <ng-container *ngIf="f['email'].errors?.['required']">
+                    Email is required
+                </ng-container>
+                <ng-container *ngIf="f['email'].errors?.['email']">
+                    Please enter a valid email
+                </ng-container>
+                <ng-container *ngIf="f['email'].errors?.['emailExists']">
+                    This email is already in use
+                </ng-container>
             </mat-error>
         </mat-form-field>
 
@@ -56,14 +82,16 @@
         <mat-form-field appearance="outline" class="form-field">
             <mat-label>Password</mat-label>
             <input matInput type="password" formControlName="password" placeholder="Enter password" />
-            <mat-error *ngIf="f['password'].touched && f['password'].hasError('required')">
-                Password is required
-            </mat-error>
-            <mat-error *ngIf="f['password'].touched && f['password'].hasError('minlength')">
-                Must be at least 8 characters long
-            </mat-error>
-            <mat-error *ngIf="f['password'].touched && f['password'].hasError('pattern')">
-                Must include uppercase, lowercase, number, and symbol
+            <mat-error *ngIf="f['password'].invalid && (f['password'].touched || submitted)">
+                <ng-container *ngIf="f['password'].errors?.['required']">
+                    Password is required
+                </ng-container>
+                <ng-container *ngIf="f['password'].errors?.['minlength']">
+                    Must be at least 8 characters long
+                </ng-container>
+                <ng-container *ngIf="f['password'].errors?.['pattern']">
+                    Must include uppercase, lowercase, number, and symbol
+                </ng-container>
             </mat-error>
         </mat-form-field>
 
@@ -73,16 +101,14 @@
             <mat-select formControlName="role">
                 <mat-option *ngFor="let role of roles" [value]="role">{{ role }}</mat-option>
             </mat-select>
-            <mat-error *ngIf="f['role'].touched && f['role'].hasError('required')">
+            <mat-error *ngIf="f['role'].invalid && (f['role'].touched || submitted)">
                 Role selection is required
             </mat-error>
         </mat-form-field>
 
         <!-- Buttons -->
         <div class="dialog-actions">
-            <button mat-stroked-button color="warn" type="button" (click)="onCancel()">
-                Cancel
-            </button>
+            <button mat-stroked-button color="warn" type="button" (click)="onCancel()">Cancel</button>
             <button mat-flat-button color="primary" type="submit" [disabled]="addUserForm.invalid || isLoading">
                 <span *ngIf="!isLoading">Add User</span>
                 <mat-progress-spinner *ngIf="isLoading" diameter="20" mode="indeterminate"></mat-progress-spinner>
