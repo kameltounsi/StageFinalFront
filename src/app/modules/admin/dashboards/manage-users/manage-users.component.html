@@ -1,8 +1,37 @@
 <div class="users-header">
+    <!-- Bouton ajouter -->
     <button mat-flat-button color="primary" (click)="openAddUserDialog()">
         + Add User
     </button>
+
+    <!-- Champ recherche -->
+    <mat-form-field appearance="outline" class="search-field">
+        <mat-label>Search</mat-label>
+        <input matInput placeholder="Search by name or email" [(ngModel)]="searchQuery" (input)="applyFilters()" />
+    </mat-form-field>
+
+    <!-- Filtrer par rôle -->
+    <mat-form-field appearance="outline" class="filter-field">
+        <mat-label>Filter by Role</mat-label>
+        <mat-select [(ngModel)]="selectedRole" (selectionChange)="applyFilters()">
+            <mat-option value="ALL">All</mat-option>
+            <mat-option *ngFor="let role of roles" [value]="role">{{ role }}</mat-option>
+        </mat-select>
+    </mat-form-field>
+
+    <!-- Bouton tri -->
+    <button mat-flat-button class="sort-button" (click)="toggleSort()">
+        Sort {{ sortDirection === 'asc' ? 'A-Z' : 'Z-A' }}
+    </button>
+
+    <!-- Compteur -->
+    <span class="user-counter">
+        Showing {{ currentPage * pageSize + 1 }}–
+        {{ Math.min((currentPage + 1) * pageSize, filteredUsers.length) }}
+        of {{ filteredUsers.length }} users
+    </span>
 </div>
+
 <div class="users-container">
     <mat-card *ngFor="let user of pagedUsers" class="user-card">
         <div class="user-card-content">
@@ -26,9 +55,9 @@
 
     <!-- Pagination -->
     <mat-paginator
-            [length]="users.length"
+            [length]="filteredUsers.length"
             [pageSize]="pageSize"
-            [pageSizeOptions]="[5]"
+            [pageSizeOptions]="[5, 10, 15]"
             (page)="onPageChange($event)">
     </mat-paginator>
 </div>

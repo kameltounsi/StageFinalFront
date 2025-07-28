@@ -4,11 +4,13 @@ import { MatPaginator, PageEvent } from '@angular/material/paginator';
 import { MatDialog } from '@angular/material/dialog';
 import Swal from 'sweetalert2';
 import { AddUserComponent } from './add-user/add-user.component';
-import {MatButton} from "@angular/material/button";
-import {MatCard} from "@angular/material/card";
-import {MatFormField} from "@angular/material/form-field";
-import {MatOption, MatSelect} from "@angular/material/select";
-import {NgForOf} from "@angular/common";
+import { MatButton } from "@angular/material/button";
+import { MatCard } from "@angular/material/card";
+import { MatFormField, MatLabel } from "@angular/material/form-field";
+import { MatOption, MatSelect } from "@angular/material/select";
+import { NgForOf } from "@angular/common";
+import { FormsModule } from '@angular/forms';
+import { MatInput } from "@angular/material/input";
 
 @Component({
     selector: 'app-manage-users',
@@ -21,14 +23,23 @@ import {NgForOf} from "@angular/common";
         MatSelect,
         MatOption,
         MatPaginator,
-        NgForOf
+        NgForOf,
+        FormsModule,
+        MatLabel,
+        MatInput
     ],
     standalone: true
 })
 export class ManageUsersComponent implements OnInit {
     users: any[] = [];
+    filteredUsers: any[] = [];
     pagedUsers: any[] = [];
     roles: string[] = ['ADMIN', 'TRAINER', 'STUDENT'];
+
+    searchQuery: string = '';
+    selectedRole: string = 'ALL';   // ✅ correction ici
+    sortDirection: 'asc' | 'desc' = 'asc'; // ✅ correction ici
+
     currentUserEmail: string = '';
     pageSize = 5;
     currentPage = 0;
@@ -52,14 +63,34 @@ export class ManageUsersComponent implements OnInit {
     loadUsers(): void {
         this.userService.getAllUsers().subscribe((res) => {
             this.users = res.filter((u) => u.email !== this.currentUserEmail);
-            this.updatePagedUsers();
+            this.applyFilters();
         });
     }
 
+    // 🔎 Appliquer recherche + filtre + tri
+    applyFilters(): void {
+        this.filteredUsers = this.users
+            .filter(user =>
+                (!this.searchQuery ||
+                    user.fullName.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
+                    user.email.toLowerCase().includes(this.searchQuery.toLowerCase()))
+                && (this.selectedRole === 'ALL' || user.role === this.selectedRole)
+            )
+            .sort((a, b) =>
+                this.sortDirection === 'asc'
+                    ? a.fullName.localeCompare(b.fullName)
+                    : b.fullName.localeCompare(a.fullName)
+            );
+
+        this.currentPage = 0;
+        this.updatePagedUsers();
+    }
+
+    // 📄 Pagination
     updatePagedUsers(): void {
         const startIndex = this.currentPage * this.pageSize;
         const endIndex = startIndex + this.pageSize;
-        this.pagedUsers = this.users.slice(startIndex, endIndex);
+        this.pagedUsers = this.filteredUsers.slice(startIndex, endIndex);
     }
 
     onPageChange(event: PageEvent): void {
@@ -68,9 +99,15 @@ export class ManageUsersComponent implements OnInit {
         this.updatePagedUsers();
     }
 
+    // 🔄 Tri A-Z / Z-A
+    toggleSort(): void {
+        this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
+        this.applyFilters();
+    }
+
+    // 🔄 Mise à jour rôle
     onRoleChange(userId: number, newRole: string): void {
         const user = this.users.find((u) => u.id === userId);
-
         this.userService.updateUserRole(userId, newRole).subscribe({
             next: () => {
                 Swal.fire({
@@ -79,8 +116,10 @@ export class ManageUsersComponent implements OnInit {
                     text: `The role of user ${user?.fullName} has been successfully changed to: ${newRole}.`,
                     confirmButtonColor: '#3085d6',
                 });
+                if (user) user.role = newRole;
+                this.applyFilters();
             },
-            error: (err) => {
+            error: () => {
                 Swal.fire({
                     icon: 'error',
                     title: 'Error',
@@ -91,6 +130,7 @@ export class ManageUsersComponent implements OnInit {
         });
     }
 
+    // ➕ Ajouter un utilisateur
     openAddUserDialog(): void {
         const dialogRef = this.dialog.open(AddUserComponent, {
             width: '500px',
@@ -109,4 +149,6 @@ export class ManageUsersComponent implements OnInit {
             }
         });
     }
+
+    protected readonly Math = Math;
 }
