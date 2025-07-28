@@ -1,0 +1,117 @@
+.add-user-dialog {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 28px;
+    min-width: 420px;
+    max-width: 520px;
+    background: #fff;
+    border-radius: 20px;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+    animation: fadeIn 0.4s ease;
+}
+
+/* Header with Fuse logo */
+.dialog-header {
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+    margin-bottom: 15px;
+}
+
+.dialog-logo {
+    width: 70px;
+    margin-bottom: 10px;
+}
+
+.dialog-title {
+    font-size: 24px;
+    font-weight: 700;
+    color: #2c3e50;
+    text-align: center;
+}
+
+/* Avatar Upload */
+.avatar-upload {
+    position: relative;
+    margin: 20px 0;
+}
+.avatar-label {
+    position: relative;
+    display: inline-block;
+    cursor: pointer;
+}
+.avatar-preview {
+    width: 110px;
+    height: 110px;
+    border-radius: 50%;
+    border: 4px solid #f0f0f0;
+    object-fit: cover;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+.avatar-label:hover .avatar-preview {
+    transform: scale(1.05);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+}
+.avatar-overlay {
+    position: absolute;
+    bottom: 6px;
+    right: 6px;
+    background: linear-gradient(135deg, #3f51b5, #6574cd);
+    border-radius: 50%;
+    padding: 7px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2);
+}
+
+/* Form Styling */
+.user-form {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+}
+.form-field {
+    width: 100%;
+}
+
+/* Buttons */
+.dialog-actions {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 25px;
+    width: 100%;
+}
+.cancel-btn {
+    border-radius: 25px;
+    padding: 8px 22px;
+    font-weight: 600;
+    border: 2px solid #f44336;
+    transition: 0.3s ease;
+}
+.cancel-btn:hover {
+    background: #f44336;
+    color: white;
+}
+.add-btn {
+    border-radius: 25px;
+    padding: 8px 22px;
+    font-weight: 600;
+    background: linear-gradient(135deg, #3f51b5, #5c6bc0);
+    color: white;
+    box-shadow: 0 4px 12px rgba(63, 81, 181, 0.4);
+    transition: 0.3s ease;
+}
+.add-btn:hover {
+    background: linear-gradient(135deg, #303f9f, #3f51b5);
+    transform: translateY(-2px);
+}
+
+/* Animation */
+@keyframes fadeIn {
+    from {opacity: 0; transform: translateY(-10px);}
+    to {opacity: 1; transform: translateY(0);}
+}

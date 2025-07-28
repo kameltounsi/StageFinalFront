@@ -33,6 +33,11 @@ export class ManageUsersService {
 
         return this.http.put(`${this.baseUrl}/${userId}/role`, null, { headers, params });
     }
+    addUser(userData: FormData): Observable<any> {
+        const token = localStorage.getItem('access_token');
+        const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
+        return this.http.post(`${this.baseUrl}/add-user`, userData, { headers });
+    }
 
 
 }

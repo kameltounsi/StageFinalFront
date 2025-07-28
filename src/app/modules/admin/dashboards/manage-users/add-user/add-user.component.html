@@ -1,0 +1,66 @@
+<div class="add-user-dialog">
+    <!-- Logo Fuse -->
+    <div class="dialog-header">
+        <img src="images/logo/logo.svg" alt="Fuse Logo" class="dialog-logo" />
+        <h2 class="dialog-title">Add New User</h2>
+    </div>
+
+    <!-- Avatar Upload -->
+    <div class="avatar-upload">
+        <label class="avatar-label">
+            <img
+                    [src]="profileImageUrl || 'images/avatars/default-avatar.png'"
+                    alt="Profile Picture"
+                    class="avatar-preview"
+            />
+            <input type="file" accept="image/*" hidden (change)="onImageSelected($event)" />
+            <div class="avatar-overlay">
+                <mat-icon>photo_camera</mat-icon>
+            </div>
+        </label>
+    </div>
+
+    <!-- Form -->
+    <form [formGroup]="addUserForm" (ngSubmit)="onSubmit()" class="user-form">
+        <mat-form-field appearance="outline" class="form-field">
+            <mat-label>Full Name</mat-label>
+            <input matInput formControlName="fullName" placeholder="Enter full name" />
+            <mat-error *ngIf="addUserForm.get('fullName')?.invalid">
+                Full name is required
+            </mat-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="form-field">
+            <mat-label>Email</mat-label>
+            <input matInput type="email" formControlName="email" placeholder="Enter email" />
+            <mat-error *ngIf="addUserForm.get('email')?.invalid">
+                Please enter a valid email
+            </mat-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="form-field">
+            <mat-label>Password</mat-label>
+            <input matInput type="password" formControlName="password" placeholder="Enter password" />
+            <mat-error *ngIf="addUserForm.get('password')?.invalid">
+                Password must be at least 8 characters long
+            </mat-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="form-field">
+            <mat-label>Role</mat-label>
+            <mat-select formControlName="role">
+                <mat-option *ngFor="let role of roles" [value]="role">{{ role }}</mat-option>
+            </mat-select>
+        </mat-form-field>
+
+        <!-- Buttons -->
+        <div class="dialog-actions">
+            <button mat-stroked-button color="warn" type="button" (click)="onCancel()" class="cancel-btn">
+                Cancel
+            </button>
+            <button mat-flat-button color="primary" type="submit" [disabled]="addUserForm.invalid" class="add-btn">
+                Add User
+            </button>
+        </div>
+    </form>
+</div>
