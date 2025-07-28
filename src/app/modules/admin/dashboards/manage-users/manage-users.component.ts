@@ -1,9 +1,9 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
 import { ManageUsersService } from './manage-users.service';
+import { MatPaginator, PageEvent } from '@angular/material/paginator';
 import { MatFormField } from '@angular/material/form-field';
 import { MatOption } from '@angular/material/core';
 import { MatSelect } from '@angular/material/select';
-import { MatPaginator, PageEvent } from '@angular/material/paginator';
 import { MatCard } from '@angular/material/card';
 import { NgForOf } from '@angular/common';
 import Swal from 'sweetalert2';
@@ -23,9 +23,10 @@ import Swal from 'sweetalert2';
     styleUrls: ['./manage-users.component.css']
 })
 export class ManageUsersComponent implements OnInit {
-    users: any[] = [];           // Tous les utilisateurs
-    pagedUsers: any[] = [];      // Utilisateurs affichés pour la page active
+    users: any[] = [];
+    pagedUsers: any[] = [];
     roles: string[] = ['ADMIN', 'TRAINER', 'STUDENT'];
+    currentUserEmail: string = '';  // Ou ID si tu préfères
 
     pageSize = 5;
     currentPage = 0;
@@ -35,11 +36,18 @@ export class ManageUsersComponent implements OnInit {
     constructor(private userService: ManageUsersService) {}
 
     ngOnInit(): void {
+        const storedUser = localStorage.getItem('user');
+        if (storedUser) {
+            const user = JSON.parse(storedUser);
+            this.currentUserEmail = user.email;
+        }
+
         this.userService.getAllUsers().subscribe((res) => {
-            this.users = res;
+            this.users = res.filter(u => u.email !== this.currentUserEmail);
             this.updatePagedUsers();
         });
     }
+
 
     updatePagedUsers(): void {
         const startIndex = this.currentPage * this.pageSize;
