@@ -1,9 +1,10 @@
 <div class="add-user-dialog">
-    <!-- Logo Fuse -->
-    <div class="dialog-header">
-        <img src="images/logo/logo.svg" alt="Fuse Logo" class="dialog-logo" />
-        <h2 class="dialog-title">Add New User</h2>
+    <!-- Logo -->
+    <div class="logo-container">
+        <img [src]="'images/logo/logo.svg'" alt="Fuse Logo" class="dialog-logo">
     </div>
+
+    <h2 class="dialog-title">Add New User</h2>
 
     <!-- Avatar Upload -->
     <div class="avatar-upload">
@@ -15,51 +16,76 @@
             />
             <input type="file" accept="image/*" hidden (change)="onImageSelected($event)" />
             <div class="avatar-overlay">
-                <mat-icon>photo_camera</mat-icon>
+                <mat-icon>camera_alt</mat-icon>
             </div>
         </label>
     </div>
 
     <!-- Form -->
     <form [formGroup]="addUserForm" (ngSubmit)="onSubmit()" class="user-form">
+
+        <!-- Full Name -->
         <mat-form-field appearance="outline" class="form-field">
             <mat-label>Full Name</mat-label>
             <input matInput formControlName="fullName" placeholder="Enter full name" />
-            <mat-error *ngIf="addUserForm.get('fullName')?.invalid">
+            <mat-error *ngIf="f['fullName'].touched && f['fullName'].hasError('required')">
                 Full name is required
+            </mat-error>
+            <mat-error *ngIf="f['fullName'].touched && f['fullName'].hasError('pattern')">
+                Only letters are allowed
             </mat-error>
         </mat-form-field>
 
+        <!-- Email -->
         <mat-form-field appearance="outline" class="form-field">
             <mat-label>Email</mat-label>
             <input matInput type="email" formControlName="email" placeholder="Enter email" />
-            <mat-error *ngIf="addUserForm.get('email')?.invalid">
+            <mat-error *ngIf="f['email'].touched && f['email'].hasError('required')">
+                Email is required
+            </mat-error>
+            <mat-error *ngIf="f['email'].touched && f['email'].hasError('email')">
                 Please enter a valid email
+            </mat-error>
+            <!-- ✅ Vérification email unique -->
+            <mat-error *ngIf="f['email'].touched && f['email'].hasError('emailExists')">
+                This email is already in use
             </mat-error>
         </mat-form-field>
 
+        <!-- Password -->
         <mat-form-field appearance="outline" class="form-field">
             <mat-label>Password</mat-label>
             <input matInput type="password" formControlName="password" placeholder="Enter password" />
-            <mat-error *ngIf="addUserForm.get('password')?.invalid">
-                Password must be at least 8 characters long
+            <mat-error *ngIf="f['password'].touched && f['password'].hasError('required')">
+                Password is required
+            </mat-error>
+            <mat-error *ngIf="f['password'].touched && f['password'].hasError('minlength')">
+                Must be at least 8 characters long
+            </mat-error>
+            <mat-error *ngIf="f['password'].touched && f['password'].hasError('pattern')">
+                Must include uppercase, lowercase, number, and symbol
             </mat-error>
         </mat-form-field>
 
+        <!-- Role -->
         <mat-form-field appearance="outline" class="form-field">
             <mat-label>Role</mat-label>
             <mat-select formControlName="role">
                 <mat-option *ngFor="let role of roles" [value]="role">{{ role }}</mat-option>
             </mat-select>
+            <mat-error *ngIf="f['role'].touched && f['role'].hasError('required')">
+                Role selection is required
+            </mat-error>
         </mat-form-field>
 
         <!-- Buttons -->
         <div class="dialog-actions">
-            <button mat-stroked-button color="warn" type="button" (click)="onCancel()" class="cancel-btn">
+            <button mat-stroked-button color="warn" type="button" (click)="onCancel()">
                 Cancel
             </button>
-            <button mat-flat-button color="primary" type="submit" [disabled]="addUserForm.invalid" class="add-btn">
-                Add User
+            <button mat-flat-button color="primary" type="submit" [disabled]="addUserForm.invalid || isLoading">
+                <span *ngIf="!isLoading">Add User</span>
+                <mat-progress-spinner *ngIf="isLoading" diameter="20" mode="indeterminate"></mat-progress-spinner>
             </button>
         </div>
     </form>

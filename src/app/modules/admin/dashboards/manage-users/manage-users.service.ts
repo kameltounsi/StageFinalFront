@@ -38,6 +38,13 @@ export class ManageUsersService {
         const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
         return this.http.post(`${this.baseUrl}/add-user`, userData, { headers });
     }
+    checkEmail(email: string): Observable<{ exists: boolean }> {
+        return this.http.get<{ exists: boolean }>(
+            `${this.baseUrl}/check-email`,
+            { params: { email } }
+        );
+    }
+
 
 
 }
