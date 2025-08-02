@@ -1,0 +1,37 @@
+<div class="manage-groups">
+    <h2>Manage Groups</h2>
+
+    <!-- Form -->
+    <form [formGroup]="groupForm" (ngSubmit)="addGroup()" class="group-form">
+        <mat-form-field appearance="outline">
+            <mat-label>Speciality</mat-label>
+            <mat-select formControlName="specialite">
+                <mat-option *ngFor="let spec of specialites" [value]="spec">
+                    {{ spec }}
+                </mat-option>
+            </mat-select>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+            <mat-label>Level</mat-label>
+            <mat-select formControlName="niveau">
+                <mat-option *ngFor="let niv of niveaux" [value]="niv">
+                    Niveau {{ niv }}
+                </mat-option>
+            </mat-select>
+        </mat-form-field>
+
+        <button mat-flat-button color="primary" type="submit">Add Group</button>
+    </form>
+
+    <!-- Group List -->
+    <mat-card *ngFor="let group of groups" class="group-card">
+        <mat-card-content>
+            <h3>{{ group.nom }}</h3>
+            <p>Speciality: {{ group.specialite }}</p>
+        </mat-card-content>
+        <mat-card-actions>
+            <button mat-stroked-button color="warn" (click)="deleteGroup(group.id)">Delete</button>
+        </mat-card-actions>
+    </mat-card>
+</div>
