@@ -18,6 +18,13 @@ export const adminNavigation: Navigation = {
             link: '/admin/users'
         },
         {
+            id: 'admin.manage-groups',
+            title: 'Manage Groups',
+            type: 'basic',
+            icon: 'heroicons_outline:users',
+            link: '/admin/manage-groups'
+        },
+        {
             id: 'admin.planning',
             title: 'Plannings',
             type: 'basic',
