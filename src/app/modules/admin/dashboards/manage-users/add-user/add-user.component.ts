@@ -172,7 +172,12 @@ export class AddUserComponent {
         formData.append('email', this.addUserForm.get('email')?.value);
         formData.append('password', this.addUserForm.get('password')?.value);
         formData.append('role', this.addUserForm.get('role')?.value);
-        if (this.selectedImageFile) formData.append('image', this.selectedImageFile);
+        if (this.selectedImageFile) {
+            formData.append('image', this.selectedImageFile);
+        }
+
+        // ✅ Envoi de la langue choisie
+        formData.append('lang', this.getSelectedLang());
 
         this.userService.addUser(formData).subscribe({
             next: (res) => {
@@ -192,6 +197,23 @@ export class AddUserComponent {
             }
         });
     }
+
+    getSelectedLang(): string {
+        const savedLang = localStorage.getItem('lang');
+        if (savedLang) {
+            return savedLang;
+        }
+        // Exemple : si le navigateur est en arabe
+        if (navigator.language.startsWith('ar')) {
+            return 'ar';
+        }
+        return navigator.language.startsWith('fr') ? 'fr' : 'en';
+    }
+
+  /*  getSelectedLang(): string {
+        return 'ar';  // ⚡ Forcer arabe pour le test
+    }
+*/
 
     onCancel(): void {
         this.dialogRef.close('cancel');
