@@ -30,10 +30,12 @@ export const appRoutes: Route[] = [
             { path: 'sign-up', loadChildren: () => import('app/modules/auth/sign-up/sign-up.routes') },
             {
                 path: 'student-request',
-                loadChildren: () => import('app/modules/auth/student-request/student-request.routes')
+                loadComponent: () =>
+                    import('./modules/auth/student-request/student-request.component')
+                        .then(m => m.StudentRequestComponent)
             },
-        ]
-    },
+        ]},
+
 
     // Auth routes (for authenticated users)
     {

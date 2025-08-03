@@ -16,9 +16,9 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { Router, RouterLink } from '@angular/router';
 import { fuseAnimations } from '@fuse/animations';
-import { FuseAlertComponent, FuseAlertType } from '@fuse/components/alert';
 import { CommonModule } from '@angular/common';
 import { AuthService } from 'app/core/auth/auth.service';
+import Swal from 'sweetalert2';
 
 @Component({
     selector: 'student-request',
@@ -30,7 +30,6 @@ import { AuthService } from 'app/core/auth/auth.service';
     imports: [
         CommonModule,
         RouterLink,
-        FuseAlertComponent,
         FormsModule,
         ReactiveFormsModule,
         MatFormFieldModule,
@@ -40,16 +39,16 @@ import { AuthService } from 'app/core/auth/auth.service';
         MatCheckboxModule,
         MatSelectModule,
         MatProgressSpinnerModule,
+
     ],
 })
 export class StudentRequestComponent implements OnInit {
     @ViewChild('requestNgForm') requestNgForm: NgForm;
 
-    alert: { type: FuseAlertType; message: string } = { type: 'success', message: '' };
     requestForm: UntypedFormGroup;
-    showAlert: boolean = false;
     selectedImageFile: File;
     profileImageUrl: string | ArrayBuffer = '';
+    isLoading = false;
 
     specialites: string[] = [
         "Cybersecurity & Ethical Hacking",
@@ -80,32 +79,57 @@ export class StudentRequestComponent implements OnInit {
     }
 
     submitRequest(): void {
-        if (this.requestForm.invalid) return;
+        if (this.requestForm.invalid) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Form Incomplete',
+                text: 'Please fill in all required fields correctly.',
+                confirmButtonColor: '#f59e0b',
+            });
+            return;
+        }
 
+        this.isLoading = true;
         this.requestForm.disable();
-        this.showAlert = false;
 
         const formData = new FormData();
-        formData.append('email', this.requestForm.get('email').value);
-        formData.append('specialite', this.requestForm.get('specialite').value);
+        formData.append('email', this.requestForm.get('email')?.value);
+        formData.append('specialite', this.requestForm.get('specialite')?.value);
         if (this.selectedImageFile) {
             formData.append('image', this.selectedImageFile);
         }
 
         this._authService.submitRequest(formData).subscribe(
             () => {
-                this.alert = { type: 'success', message: 'Your request has been submitted successfully!' };
-                this.showAlert = true;
+                this.isLoading = false;
                 this.requestForm.enable();
                 this.requestNgForm.resetForm();
+
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Request Submitted',
+                    text: 'Your request has been submitted successfully!',
+                    confirmButtonColor: '#3085d6',
+                    timer: 2500,
+                    timerProgressBar: true
+                }).then(() => {
+                    this._router.navigate(['/sign-in']); // ✅ redirection après succès
+                });
             },
             () => {
+                this.isLoading = false;
                 this.requestForm.enable();
-                this.alert = { type: 'error', message: 'Something went wrong, please try again.' };
-                this.showAlert = true;
+
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Submission Failed',
+                    text: 'Something went wrong. Please try again.',
+                    confirmButtonColor: '#d33',
+                });
             }
         );
     }
+
 
     onImageSelected(event: Event): void {
         const file = (event.target as HTMLInputElement).files?.[0];

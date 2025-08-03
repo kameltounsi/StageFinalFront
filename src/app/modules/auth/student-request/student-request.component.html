@@ -1,0 +1,157 @@
+<div
+        class="flex min-w-0 flex-auto flex-col items-center sm:flex-row sm:justify-center md:items-start md:justify-start"
+>
+    <!-- Form Section -->
+    <div
+            class="w-full px-4 py-8 sm:bg-card sm:w-auto sm:rounded-2xl sm:p-12 sm:shadow md:flex md:h-full md:w-1/2 md:items-center md:justify-end md:rounded-none md:p-16 md:shadow-none"
+    >
+        <div class="mx-auto w-full max-w-80 sm:mx-0 sm:w-96">
+            <!-- Logo -->
+            <div class="w-12">
+                <img src="images/logo/logo.svg" />
+            </div>
+
+            <!-- Title -->
+            <div class="mt-8 text-4xl font-extrabold leading-tight tracking-tight">
+                Student Request
+            </div>
+            <div class="mt-0.5 flex items-baseline font-medium">
+                <div>Already registered?</div>
+                <a
+                        class="ml-1 text-primary-500 hover:underline"
+                        [routerLink]="['/sign-in']"
+                >
+                    Sign in
+                </a>
+            </div>
+
+            <!-- SweetAlert will handle alerts dynamically -->
+
+            <!-- Profile Image Upload -->
+            <div class="flex justify-center mt-6 mb-4">
+                <label class="relative group cursor-pointer">
+                    <!-- Image Preview -->
+                    <img
+                            [src]="profileImageUrl || 'images/avatars/default-avatar.png'"
+                            alt="Profile"
+                            class="w-28 h-28 rounded-full border-4 border-white shadow-lg object-cover transition duration-300 group-hover:opacity-80"
+                    />
+                    <!-- File Input -->
+                    <input
+                            type="file"
+                            accept="image/*"
+                            hidden
+                            (change)="onImageSelected($event)"
+                    />
+                    <!-- Camera Icon -->
+                    <div
+                            class="absolute bottom-1 right-1 bg-white p-1.5 rounded-full shadow-md transition duration-200 group-hover:scale-110"
+                    >
+                        <mat-icon svgIcon="heroicons_solid:camera" class="text-gray-700"></mat-icon>
+                    </div>
+                </label>
+            </div>
+
+            <!-- Request Form -->
+            <form
+                    class="mt-6"
+                    [formGroup]="requestForm"
+                    #requestNgForm="ngForm"
+                    (ngSubmit)="submitRequest()"
+            >
+                <!-- Email Field -->
+                <mat-form-field class="w-full">
+                    <mat-label>Email address</mat-label>
+                    <input matInput formControlName="email" />
+                    <mat-error *ngIf="requestForm.get('email')?.hasError('required')">
+                        Email is required
+                    </mat-error>
+                    <mat-error *ngIf="requestForm.get('email')?.hasError('email')">
+                        Please enter a valid email
+                    </mat-error>
+                </mat-form-field>
+
+                <!-- Speciality Field -->
+                <mat-form-field class="w-full">
+                    <mat-label>Choose Speciality</mat-label>
+                    <mat-select formControlName="specialite">
+                        <mat-option *ngFor="let spec of specialites" [value]="spec">
+                            {{ spec }}
+                        </mat-option>
+                    </mat-select>
+                    <mat-error *ngIf="requestForm.get('specialite')?.hasError('required')">
+                        Speciality is required
+                    </mat-error>
+                </mat-form-field>
+
+                <!-- Agreements -->
+                <mat-checkbox class="mt-3" color="primary" formControlName="agreements">
+                    I agree with
+                    <a class="ml-1 text-primary-500 hover:underline" [routerLink]="['./']">
+                        Terms
+                    </a>
+                    and
+                    <a class="ml-1 text-primary-500 hover:underline" [routerLink]="['./']">
+                        Privacy Policy
+                    </a>
+                </mat-checkbox>
+
+                <!-- Submit Button -->
+                <button
+                        class="fuse-mat-button-large mt-6 w-full"
+                        mat-flat-button
+                        color="primary"
+                        type="submit"
+                        [disabled]="isLoading || requestForm.invalid"
+                >
+                    <span *ngIf="!isLoading">Submit Request</span>
+                    <mat-progress-spinner
+                            *ngIf="isLoading"
+                            [diameter]="24"
+                            [mode]="'indeterminate'"
+                    ></mat-progress-spinner>
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Welcome Section -->
+    <div
+            class="relative hidden h-full w-1/2 flex-auto items-center justify-center overflow-hidden bg-gray-800 p-16 dark:border-l md:flex lg:px-28"
+    >
+        <!-- Background -->
+        <svg
+                class="absolute inset-0 pointer-events-none"
+                viewBox="0 0 960 540"
+                width="100%"
+                height="100%"
+                preserveAspectRatio="xMidYMax slice"
+                xmlns="http://www.w3.org/2000/svg"
+        >
+            <g class="text-gray-700 opacity-25" fill="none" stroke="currentColor" stroke-width="100">
+                <circle r="234" cx="196" cy="23"></circle>
+                <circle r="234" cx="790" cy="491"></circle>
+            </g>
+        </svg>
+
+        <div class="relative z-10 w-full max-w-2xl">
+            <div class="text-6xl font-bold leading-none text-gray-100">
+                <div>Welcome to</div>
+                <div>our Training Center</div>
+            </div>
+            <div class="mt-6 text-lg leading-6 tracking-tight text-gray-400">
+                Submit your request today and start your professional journey with us.
+            </div>
+            <div class="mt-8 flex items-center">
+                <div class="flex flex-0 items-center -space-x-1.5">
+                    <img class="h-10 w-10 rounded-full object-cover ring-4 ring-gray-800" src="images/avatars/female-18.jpg" />
+                    <img class="h-10 w-10 rounded-full object-cover ring-4 ring-gray-800" src="images/avatars/female-11.jpg" />
+                    <img class="h-10 w-10 rounded-full object-cover ring-4 ring-gray-800" src="images/avatars/male-09.jpg" />
+                </div>
+                <div class="ml-4 font-medium tracking-tight text-gray-400">
+                    More than 5k students joined us, it's your turn
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
