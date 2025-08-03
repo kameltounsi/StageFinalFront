@@ -5,6 +5,13 @@
         <button mat-flat-button color="primary" (click)="openAddUserDialog()">
             + Add User
         </button>
+        <!-- Manage Requests avec compteur -->
+        <div class="manage-requests-container">
+            <button mat-flat-button color="primary" class="manage-requests-btn" (click)="openManageRequestsDialog()">
+                Manage Requests
+                <span class="badge" *ngIf="pendingRequestsCount > 0">{{ pendingRequestsCount }}</span>
+            </button>
+        </div>
 
         <mat-form-field appearance="outline" class="search-field">
             <mat-label>Search</mat-label>

@@ -1,0 +1,30 @@
+<h2 mat-dialog-title class="dialog-title">📥 Pending Student Requests</h2>
+<mat-dialog-content class="dialog-content">
+    <div *ngFor="let req of requests" class="request-card">
+        <div class="request-avatar">
+            <img [src]="req.profilePicture || '/default-avatar.png'" alt="avatar">
+        </div>
+        <div class="request-info">
+            <p class="request-email">{{ req.email }}</p>
+            <p class="request-speciality">
+                <strong>Speciality:</strong> {{ req.specialite }}
+            </p>
+        </div>
+        <div class="request-actions">
+            <button mat-stroked-button color="primary" class="approve-btn" (click)="approveRequest(req.id)">
+                Approve
+            </button>
+            <button mat-stroked-button color="warn" class="reject-btn" (click)="rejectRequest(req.id)">
+                Reject
+            </button>
+        </div>
+    </div>
+
+    <div *ngIf="requests.length === 0" class="empty-message">
+        🎉 No pending requests at the moment.
+    </div>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+    <button mat-flat-button class="close-btn" mat-dialog-close>Close</button>
+</mat-dialog-actions>

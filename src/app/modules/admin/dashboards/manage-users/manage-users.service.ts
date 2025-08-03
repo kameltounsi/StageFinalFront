@@ -8,6 +8,7 @@ import {User} from "../../../../core/user/user.types";
 })
 export class ManageUsersService {
     private baseUrl = 'http://localhost:8089/api/auth';
+    private apiUrl = 'http://localhost:8089/api'; // ⚡ adapte ton backend URL
 
     constructor(private http: HttpClient) {}
 
@@ -44,7 +45,15 @@ export class ManageUsersService {
             { params: { email } }
         );
     }
+    // ⚡ Nouvelle méthode : récupérer les requests PENDING
+    getPendingRequests(): Observable<any[]> {
+        return this.http.get<any[]>(`${this.apiUrl}/requests/pending`);
+    }
 
+    // ⚡ Nouvelle méthode : mettre à jour le statut (approve/reject)
+    updateRequestStatus(requestId: number, status: 'APPROVED' | 'REJECTED'): Observable<any> {
+        return this.http.put(`${this.apiUrl}/requests/${requestId}/status`, { status });
+    }
 
 
 }

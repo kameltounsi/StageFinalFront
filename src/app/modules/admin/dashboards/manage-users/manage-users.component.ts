@@ -8,9 +8,10 @@ import { MatButton } from "@angular/material/button";
 import { MatCard } from "@angular/material/card";
 import { MatFormField, MatLabel } from "@angular/material/form-field";
 import { MatOption, MatSelect } from "@angular/material/select";
-import { NgForOf } from "@angular/common";
+import {NgForOf, NgIf} from "@angular/common";
 import { FormsModule } from '@angular/forms';
 import { MatInput } from "@angular/material/input";
+import { ManageRequestsComponent } from './manage-requests/manage-requests.component';
 
 @Component({
     selector: 'app-manage-users',
@@ -26,7 +27,8 @@ import { MatInput } from "@angular/material/input";
         NgForOf,
         FormsModule,
         MatLabel,
-        MatInput
+        MatInput,
+        NgIf
     ],
     standalone: true
 })
@@ -35,6 +37,7 @@ export class ManageUsersComponent implements OnInit {
     filteredUsers: any[] = [];
     pagedUsers: any[] = [];
     roles: string[] = ['ADMIN', 'TRAINER', 'STUDENT'];
+    pendingRequestsCount: number = 0;
 
     searchQuery: string = '';
     selectedRole: string = 'ALL';   // ✅ correction ici
@@ -65,8 +68,22 @@ export class ManageUsersComponent implements OnInit {
             this.users = res.filter((u) => u.email !== this.currentUserEmail);
             this.applyFilters();
         });
-    }
 
+        // Charger le nombre de requêtes PENDING
+        this.userService.getPendingRequests().subscribe(res => {
+            this.pendingRequestsCount = res.length;
+        });
+    }
+    openManageRequestsDialog(): void {
+        const dialogRef = this.dialog.open(ManageRequestsComponent, {
+            width: '600px',
+            disableClose: true,
+        });
+
+        dialogRef.afterClosed().subscribe(() => {
+            this.loadUsers(); // refresh compteur
+        });
+    }
     // 🔎 Appliquer recherche + filtre + tri
     applyFilters(): void {
         this.filteredUsers = this.users
