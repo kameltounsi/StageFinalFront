@@ -158,7 +158,7 @@ export class ManageGroupsComponent implements OnInit {
         this.updatePagination();
     }
 
-
+/*
     addGroup(): void {
         if (this.groupForm.invalid) {
             Swal.fire('Error', 'Please fill all required fields', 'error');
@@ -183,6 +183,41 @@ export class ManageGroupsComponent implements OnInit {
             this.http.get<any[]>('http://localhost:8089/api/groups').subscribe(groups => {
                 this.groups = groups;
                 // Réappliquer les filtres actuels
+                this.applyFilters();
+            });
+        });
+    }
+*/
+    addGroup(): void {
+        if (this.groupForm.invalid) {
+            Swal.fire('Error', 'Please fill all required fields', 'error');
+            return;
+        }
+
+        const specialite = this.groupForm.get('specialite')?.value;
+        const niveau = this.groupForm.get('niveau')?.value;
+
+        // Générer un nom unique pour le groupe
+        const nom = this.generateGroupName(specialite, niveau);
+
+        const formData = new FormData();
+        formData.append('specialite', specialite);
+        formData.append('niveau', niveau);
+        formData.append('nom', nom);
+
+        const trainers = this.groupForm.get('trainerIds')?.value || [];
+        trainers.forEach((id: number) => formData.append('trainerIds', id.toString()));
+
+        const students = this.groupForm.get('studentIds')?.value || [];
+        students.forEach((id: number) => formData.append('studentIds', id.toString()));
+
+        this.http.post('http://localhost:8089/api/groups/add', formData).subscribe((res: any) => {
+            Swal.fire('Success', `Group ${res.nom} created successfully!`, 'success');
+            this.groupForm.reset();
+
+            // Recharger et réappliquer les filtres
+            this.http.get<any[]>('http://localhost:8089/api/groups').subscribe(groups => {
+                this.groups = groups;
                 this.applyFilters();
             });
         });
@@ -284,6 +319,41 @@ export class ManageGroupsComponent implements OnInit {
             }
             this.groupedGroups[group.specialite].push(group);
         });
+    }
+    generateGroupName(specialite: string, niveau: string): string {
+        // Filtrer les groupes de la même spécialité et du même niveau
+        const sameGroups = this.groups.filter(
+            g => g.specialite === specialite && g.niveau === niveau
+        );
+
+        if (sameGroups.length === 0) {
+            // Premier groupe → "DM A"
+            return `${this.getShortCode(specialite)} ${niveau}`;
+        }
+
+        // Extraire les suffixes numériques (A, A 2, A 3…)
+        const regex = new RegExp(`^${this.getShortCode(specialite)} ${niveau}(?: (\\d+))?$`);
+        const suffixes = sameGroups
+            .map(g => {
+                const match = g.nom.match(regex);
+                return match && match[1] ? parseInt(match[1], 10) : 1;
+            });
+
+        // Prendre le max + 1
+        const nextNumber = Math.max(...suffixes) + 1;
+
+        return nextNumber === 1
+            ? `${this.getShortCode(specialite)} ${niveau}`
+            : `${this.getShortCode(specialite)} ${niveau} ${nextNumber}`;
+    }
+
+// Raccourci pour les spécialités (ex: "Digital Marketing & Social Media Management" -> "DM")
+    getShortCode(specialite: string): string {
+        return specialite
+            .split(' ')
+            .map(word => word[0].toUpperCase())
+            .join('')
+            .slice(0, 2); // exemple : 2 lettres max
     }
 
 }
