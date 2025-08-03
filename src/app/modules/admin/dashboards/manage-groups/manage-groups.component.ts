@@ -1,13 +1,15 @@
-import { Component, OnInit } from '@angular/core';
-import {FormBuilder, FormGroup, ReactiveFormsModule, Validators} from '@angular/forms';
+import {Component, OnInit, ViewChild} from '@angular/core';
+import {FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators} from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import Swal from 'sweetalert2';
 import {MatFormField, MatLabel} from "@angular/material/form-field";
 import {MatOption, MatSelect} from "@angular/material/select";
-import {MatCard, MatCardActions, MatCardContent} from "@angular/material/card";
-import {NgForOf} from "@angular/common";
-import {MatButton} from "@angular/material/button";
+import {MatCard, MatCardActions, MatCardContent, MatCardHeader} from "@angular/material/card";
+import {NgForOf, NgIf} from "@angular/common";
+import {MatButton, MatIconButton} from "@angular/material/button";
 import {MatInput} from "@angular/material/input";
+import {MatIcon} from "@angular/material/icon";
+import {MatPaginator} from "@angular/material/paginator";
 
 @Component({
     selector: 'app-manage-groups',
@@ -24,7 +26,13 @@ import {MatInput} from "@angular/material/input";
         MatCardActions,
         NgForOf,
         MatButton,
-        MatInput
+        MatInput,
+        MatIcon,
+        MatCardHeader,
+        MatIconButton,
+        NgIf,
+        MatPaginator,
+        FormsModule
     ],
     standalone: true
 })
@@ -65,10 +73,89 @@ export class ManageGroupsComponent implements OnInit {
         this.loadGroups();
     }
 
+   /* groupedGroups: { [key: string]: any[] } = {};
+
     loadGroups(): void {
         this.http.get<any[]>('http://localhost:8089/api/groups').subscribe(res => {
             this.groups = res;
+
+            // Organiser par spécialité
+            this.groupedGroups = {};
+            this.groups.forEach(group => {
+                if (!this.groupedGroups[group.specialite]) {
+                    this.groupedGroups[group.specialite] = [];
+                }
+                this.groupedGroups[group.specialite].push(group);
+            });
+
+            // Trier chaque spécialité : Niveau A avant Niveau B
+            Object.keys(this.groupedGroups).forEach(specialite => {
+                this.groupedGroups[specialite].sort((a, b) => {
+                    const order = { 'A': 1, 'B': 2 };
+                    const nivA = a.niveau || '';
+                    const nivB = b.niveau || '';
+
+                    // Comparer par niveau
+                    if (order[nivA] < order[nivB]) return -1;
+                    if (order[nivA] > order[nivB]) return 1;
+
+                    // Si même niveau, comparer par nom (pour "A" vs "A 2")
+                    return a.nom.localeCompare(b.nom, undefined, { numeric: true });
+                });
+            });
         });
+    }
+*/
+    displayedGroups: any[] = [];
+    pageSize = 6; // 6 groupes par page (par ex.)
+    currentPage = 0;
+
+    @ViewChild(MatPaginator) paginator!: MatPaginator;
+
+    loadGroups(): void {
+        this.http.get<any[]>('http://localhost:8089/api/groups').subscribe(res => {
+            this.groups = res;
+
+            // Trier : par specialité puis par niveau
+            this.groups.sort((a, b) => {
+                const specCompare = a.specialite.localeCompare(b.specialite);
+                if (specCompare !== 0) return specCompare;
+
+                const order = { 'A': 1, 'B': 2 };
+                const nivA = a.niveau || '';
+                const nivB = b.niveau || '';
+                if (order[nivA] < order[nivB]) return -1;
+                if (order[nivA] > order[nivB]) return 1;
+
+                return a.nom.localeCompare(b.nom, undefined, { numeric: true });
+            });
+
+            this.updatePagination();
+        });
+    }
+
+    groupedGroups: { [key: string]: any[] } = {};
+
+    updatePagination(): void {
+        const startIndex = this.currentPage * this.pageSize;
+        const endIndex = startIndex + this.pageSize;
+        const pageGroups = this.groups.slice(startIndex, endIndex);
+
+        // Regrouper les groupes affichés (pagés) par spécialité
+        this.groupedGroups = {};
+        pageGroups.forEach(group => {
+            if (!this.groupedGroups[group.specialite]) {
+                this.groupedGroups[group.specialite] = [];
+            }
+            this.groupedGroups[group.specialite].push(group);
+        });
+    }
+
+
+    onPageChange(event: any): void {
+        this.currentPage = event.pageIndex;
+        this.pageSize = event.pageSize;
+        this.updatePagination();
     }
 
 
@@ -91,9 +178,16 @@ export class ManageGroupsComponent implements OnInit {
         this.http.post('http://localhost:8089/api/groups/add', formData).subscribe((res: any) => {
             Swal.fire('Success', `Group ${res.nom} created successfully!`, 'success');
             this.groupForm.reset();
-            this.loadGroups();
+
+            // Recharger tous les groupes
+            this.http.get<any[]>('http://localhost:8089/api/groups').subscribe(groups => {
+                this.groups = groups;
+                // Réappliquer les filtres actuels
+                this.applyFilters();
+            });
         });
     }
+
 
 
     deleteGroup(id: number): void {
@@ -107,11 +201,89 @@ export class ManageGroupsComponent implements OnInit {
             confirmButtonText: 'Yes, delete it!'
         }).then(result => {
             if (result.isConfirmed) {
-                this.http.delete(`http://localhost:8089/api/groupes/${id}`).subscribe(() => {
+                this.http.delete(`http://localhost:8089/api/groups/${id}`).subscribe(() => {
                     Swal.fire('Deleted!', 'The group has been deleted.', 'success');
                     this.loadGroups();
                 });
             }
         });
     }
+
+    protected readonly Object = Object;
+    searchTerm: string = '';
+
+    applySearch(): void {
+        const term = this.searchTerm.toLowerCase().trim();
+
+        if (!term) {
+            // si rien tapé → afficher tout
+            this.updatePagination();
+            return;
+        }
+
+        const filteredGroups = this.groups.filter(group =>
+            group.specialite.toLowerCase().includes(term) ||
+            group.nom.toLowerCase().includes(term)
+        );
+
+        // Recréer groupedGroups avec les résultats filtrés
+        this.groupedGroups = {};
+        filteredGroups.forEach(group => {
+            if (!this.groupedGroups[group.specialite]) {
+                this.groupedGroups[group.specialite] = [];
+            }
+            this.groupedGroups[group.specialite].push(group);
+        });
+    }
+    selectedSpecialite: string = '';
+
+    filterBySpecialite(): void {
+        if (!this.selectedSpecialite) {
+            // si aucune spécialité sélectionnée → afficher tout
+            this.updatePagination();
+            return;
+        }
+
+        const filteredGroups = this.groups.filter(group =>
+            group.specialite === this.selectedSpecialite
+        );
+
+        // Regrouper les groupes filtrés par spécialité
+        this.groupedGroups = {};
+        filteredGroups.forEach(group => {
+            if (!this.groupedGroups[group.specialite]) {
+                this.groupedGroups[group.specialite] = [];
+            }
+            this.groupedGroups[group.specialite].push(group);
+        });
+    }
+
+    applyFilters(): void {
+        let filteredGroups = this.groups;
+
+        // Filtrer par spécialité si sélectionnée
+        if (this.selectedSpecialite) {
+            filteredGroups = filteredGroups.filter(group =>
+                group.specialite === this.selectedSpecialite
+            );
+        }
+
+        // Filtrer par nom si texte saisi
+        if (this.searchTerm) {
+            const term = this.searchTerm.toLowerCase();
+            filteredGroups = filteredGroups.filter(group =>
+                group.nom.toLowerCase().includes(term)
+            );
+        }
+
+        // Regrouper les résultats filtrés
+        this.groupedGroups = {};
+        filteredGroups.forEach(group => {
+            if (!this.groupedGroups[group.specialite]) {
+                this.groupedGroups[group.specialite] = [];
+            }
+            this.groupedGroups[group.specialite].push(group);
+        });
+    }
+
 }

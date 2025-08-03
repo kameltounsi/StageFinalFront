@@ -1,9 +1,9 @@
 <div class="manage-groups">
-    <h2>Manage Groups</h2>
+    <h2 class="title">Manage Groups</h2>
 
-    <!-- Form -->
+    <!-- Formulaire pour ajouter un groupe -->
     <form [formGroup]="groupForm" (ngSubmit)="addGroup()" class="group-form">
-        <mat-form-field appearance="outline">
+        <mat-form-field appearance="outline" class="form-field">
             <mat-label>Speciality</mat-label>
             <mat-select formControlName="specialite">
                 <mat-option *ngFor="let spec of specialites" [value]="spec">
@@ -12,7 +12,7 @@
             </mat-select>
         </mat-form-field>
 
-        <mat-form-field appearance="outline">
+        <mat-form-field appearance="outline" class="form-field">
             <mat-label>Level</mat-label>
             <mat-select formControlName="niveau">
                 <mat-option *ngFor="let niv of niveaux" [value]="niv">
@@ -21,17 +21,52 @@
             </mat-select>
         </mat-form-field>
 
-        <button mat-flat-button color="primary" type="submit">Add Group</button>
+        <button mat-flat-button color="primary" class="add-btn" type="submit">
+            + Add Group
+        </button>
     </form>
 
-    <!-- Group List -->
-    <mat-card *ngFor="let group of groups" class="group-card">
-        <mat-card-content>
-            <h3>{{ group.nom }}</h3>
-            <p>Speciality: {{ group.specialite }}</p>
-        </mat-card-content>
-        <mat-card-actions>
-            <button mat-stroked-button color="warn" (click)="deleteGroup(group.id)">Delete</button>
-        </mat-card-actions>
-    </mat-card>
+    <!-- Filtres -->
+    <div class="filter-bar">
+        <!-- Filtre par spécialité -->
+        <mat-form-field appearance="outline" class="filter-field">
+            <mat-label>Filter by Speciality</mat-label>
+            <mat-select [(ngModel)]="selectedSpecialite" (selectionChange)="applyFilters()">
+                <mat-option value="">All Specialities</mat-option>
+                <mat-option *ngFor="let spec of specialites" [value]="spec">
+                    {{ spec }}
+                </mat-option>
+            </mat-select>
+        </mat-form-field>
+
+        <!-- Recherche par nom -->
+        <mat-form-field appearance="outline" class="search-field">
+            <mat-label>Search by Group Name</mat-label>
+            <input matInput [(ngModel)]="searchTerm" (ngModelChange)="applyFilters()" placeholder="Type a group name...">
+        </mat-form-field>
+    </div>
+
+    <!-- Groupes filtrés -->
+    <div *ngFor="let specialite of Object.keys(groupedGroups)" class="speciality-block">
+        <mat-card class="speciality-card">
+            <div class="speciality-header">
+                <h3>{{ specialite }}</h3>
+            </div>
+            <div class="group-list">
+                <div *ngFor="let group of groupedGroups[specialite]" class="group-item">
+                    <span class="group-name">{{ group.nom }}</span>
+                    <button mat-icon-button color="warn" (click)="deleteGroup(group.id)">
+                        <mat-icon>delete</mat-icon>
+                    </button>
+                </div>
+            </div>
+        </mat-card>
+    </div>
+
+    <!-- Paginator -->
+    <mat-paginator [length]="groups.length"
+                   [pageSize]="pageSize"
+                   [pageSizeOptions]="[3, 6, 9]"
+                   (page)="onPageChange($event)">
+    </mat-paginator>
 </div>
