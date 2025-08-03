@@ -158,7 +158,6 @@ export class ManageGroupsComponent implements OnInit {
         this.updatePagination();
     }
 
-/*
     addGroup(): void {
         if (this.groupForm.invalid) {
             Swal.fire('Error', 'Please fill all required fields', 'error');
@@ -184,10 +183,13 @@ export class ManageGroupsComponent implements OnInit {
                 this.groups = groups;
                 // Réappliquer les filtres actuels
                 this.applyFilters();
+                this.loadGroups();
+
             });
         });
     }
-*/
+
+    /*
     addGroup(): void {
         if (this.groupForm.invalid) {
             Swal.fire('Error', 'Please fill all required fields', 'error');
@@ -222,7 +224,7 @@ export class ManageGroupsComponent implements OnInit {
             });
         });
     }
-
+*/
 
 
     deleteGroup(id: number): void {
@@ -319,41 +321,6 @@ export class ManageGroupsComponent implements OnInit {
             }
             this.groupedGroups[group.specialite].push(group);
         });
-    }
-    generateGroupName(specialite: string, niveau: string): string {
-        // Filtrer les groupes de la même spécialité et du même niveau
-        const sameGroups = this.groups.filter(
-            g => g.specialite === specialite && g.niveau === niveau
-        );
-
-        if (sameGroups.length === 0) {
-            // Premier groupe → "DM A"
-            return `${this.getShortCode(specialite)} ${niveau}`;
-        }
-
-        // Extraire les suffixes numériques (A, A 2, A 3…)
-        const regex = new RegExp(`^${this.getShortCode(specialite)} ${niveau}(?: (\\d+))?$`);
-        const suffixes = sameGroups
-            .map(g => {
-                const match = g.nom.match(regex);
-                return match && match[1] ? parseInt(match[1], 10) : 1;
-            });
-
-        // Prendre le max + 1
-        const nextNumber = Math.max(...suffixes) + 1;
-
-        return nextNumber === 1
-            ? `${this.getShortCode(specialite)} ${niveau}`
-            : `${this.getShortCode(specialite)} ${niveau} ${nextNumber}`;
-    }
-
-// Raccourci pour les spécialités (ex: "Digital Marketing & Social Media Management" -> "DM")
-    getShortCode(specialite: string): string {
-        return specialite
-            .split(' ')
-            .map(word => word[0].toUpperCase())
-            .join('')
-            .slice(0, 2); // exemple : 2 lettres max
     }
 
 }
