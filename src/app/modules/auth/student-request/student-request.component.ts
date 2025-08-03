@@ -19,6 +19,8 @@ import { fuseAnimations } from '@fuse/animations';
 import { CommonModule } from '@angular/common';
 import { AuthService } from 'app/core/auth/auth.service';
 import Swal from 'sweetalert2';
+import { ElementRef } from '@angular/core';
+import {MatMenu, MatMenuItem, MatMenuTrigger} from "@angular/material/menu";
 
 @Component({
     selector: 'student-request',
@@ -39,6 +41,9 @@ import Swal from 'sweetalert2';
         MatCheckboxModule,
         MatSelectModule,
         MatProgressSpinnerModule,
+        MatMenuTrigger,
+        MatMenu,
+        MatMenuItem,
 
     ],
 })
@@ -69,6 +74,11 @@ export class StudentRequestComponent implements OnInit {
     ];
 
     constructor(private _authService: AuthService, private _formBuilder: UntypedFormBuilder, private _router: Router) {}
+    @ViewChild('video') videoRef!: ElementRef<HTMLVideoElement>;
+    @ViewChild('canvas') canvasRef!: ElementRef<HTMLCanvasElement>;
+
+    showCamera = false;
+    videoStream: MediaStream | null = null;
 
     ngOnInit(): void {
         this.requestForm = this._formBuilder.group({
@@ -116,19 +126,26 @@ export class StudentRequestComponent implements OnInit {
                     this._router.navigate(['/sign-in']); // ✅ redirection après succès
                 });
             },
-            () => {
+            (err) => {
                 this.isLoading = false;
                 this.requestForm.enable();
+
+                let errorMessage = 'Something went wrong. Please try again.';
+
+                if (err.status === 409) {
+                    errorMessage = 'This email is already registered!';
+                }
 
                 Swal.fire({
                     icon: 'error',
                     title: 'Submission Failed',
-                    text: 'Something went wrong. Please try again.',
+                    text: errorMessage,
                     confirmButtonColor: '#d33',
                 });
             }
         );
     }
+
 
 
     onImageSelected(event: Event): void {
@@ -140,4 +157,46 @@ export class StudentRequestComponent implements OnInit {
             reader.readAsDataURL(file);
         }
     }
+    openFilePicker(): void {
+        const input = document.querySelector<HTMLInputElement>('#fileInput');
+        if (input) input.click();
+    }
+
+    async openCamera(): Promise<void> {
+        this.showCamera = true;
+        try {
+            this.videoStream = await navigator.mediaDevices.getUserMedia({ video: true });
+            if (this.videoRef?.nativeElement) {
+                this.videoRef.nativeElement.srcObject = this.videoStream;
+            }
+        } catch (error) {
+            Swal.fire('Error', 'Cannot access camera.', 'error');
+        }
+    }
+
+    capturePhoto(): void {
+        if (!this.videoRef || !this.canvasRef) return;
+
+        const video = this.videoRef.nativeElement;
+        const canvas = this.canvasRef.nativeElement;
+        const context = canvas.getContext('2d');
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        context?.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+        canvas.toBlob((blob) => {
+            if (blob) {
+                this.selectedImageFile = new File([blob], "captured.png", { type: "image/png" });
+                this.profileImageUrl = URL.createObjectURL(this.selectedImageFile);
+            }
+        });
+
+        this.closeCamera();
+    }
+
+    closeCamera(): void {
+        this.showCamera = false;
+        this.videoStream?.getTracks().forEach(track => track.stop());
+    }
+
 }

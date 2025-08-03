@@ -25,31 +25,47 @@
                 </a>
             </div>
 
-            <!-- SweetAlert will handle alerts dynamically -->
-
-            <!-- Profile Image Upload -->
             <div class="flex justify-center mt-6 mb-4">
-                <label class="relative group cursor-pointer">
+                <div class="relative">
                     <!-- Image Preview -->
                     <img
                             [src]="profileImageUrl || 'images/avatars/default-avatar.png'"
                             alt="Profile"
-                            class="w-28 h-28 rounded-full border-4 border-white shadow-lg object-cover transition duration-300 group-hover:opacity-80"
+                            class="w-28 h-28 rounded-full border-4 border-white shadow-lg object-cover"
                     />
-                    <!-- File Input -->
-                    <input
-                            type="file"
-                            accept="image/*"
-                            hidden
-                            (change)="onImageSelected($event)"
-                    />
-                    <!-- Camera Icon -->
-                    <div
-                            class="absolute bottom-1 right-1 bg-white p-1.5 rounded-full shadow-md transition duration-200 group-hover:scale-110"
+
+                    <!-- Camera Button -->
+                    <button
+                            mat-icon-button
+                            class="camera-button"
+                            [matMenuTriggerFor]="cameraMenu"
                     >
-                        <mat-icon svgIcon="heroicons_solid:camera" class="text-gray-700"></mat-icon>
+                        <mat-icon>camera_alt</mat-icon>
+                    </button>
+
+                    <!-- Camera Menu -->
+                    <mat-menu #cameraMenu="matMenu">
+                        <button mat-menu-item (click)="openFilePicker()">
+                            <mat-icon>upload</mat-icon>
+                            <span>Upload a photo</span>
+                        </button>
+                        <button mat-menu-item (click)="openCamera()">
+                            <mat-icon>photo_camera</mat-icon>
+                            <span>Take a photo</span>
+                        </button>
+                    </mat-menu>
+
+                    <!-- File Input caché -->
+                    <input id="fileInput" type="file" accept="image/*" hidden (change)="onImageSelected($event)" />
+
+                    <!-- Video Camera -->
+                    <div *ngIf="showCamera" class="camera-container">
+                        <video #video autoplay></video>
+                        <button mat-stroked-button color="primary" (click)="capturePhoto()">Capture</button>
+                        <button mat-button color="warn" (click)="closeCamera()">Cancel</button>
+                        <canvas #canvas hidden></canvas>
                     </div>
-                </label>
+                </div>
             </div>
 
             <!-- Request Form -->
