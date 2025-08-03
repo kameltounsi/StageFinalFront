@@ -28,6 +28,10 @@ export const appRoutes: Route[] = [
             { path: 'reset-flow', loadChildren: () => import('app/modules/auth/reset-flow/reset-flow.routes').then(m => m.ResetFlowModule) },
             { path: 'sign-in', loadChildren: () => import('app/modules/auth/sign-in/sign-in.routes') },
             { path: 'sign-up', loadChildren: () => import('app/modules/auth/sign-up/sign-up.routes') },
+            {
+                path: 'student-request',
+                loadChildren: () => import('app/modules/auth/student-request/student-request.routes')
+            },
         ]
     },
 

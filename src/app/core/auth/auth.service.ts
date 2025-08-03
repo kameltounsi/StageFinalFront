@@ -219,5 +219,8 @@ signIn(credentials: { email: string; password: string }): Observable<AuthRespons
             responseType: 'text'
         });
     }
+    submitRequest(formData: FormData): Observable<any> {
+        return this._httpClient.post('http://localhost:8089/api/requests/submit', formData);
+    }
 
 }
