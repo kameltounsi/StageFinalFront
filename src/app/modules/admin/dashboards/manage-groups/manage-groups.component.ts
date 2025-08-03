@@ -136,12 +136,11 @@ export class ManageGroupsComponent implements OnInit {
 
     groupedGroups: { [key: string]: any[] } = {};
 
-    updatePagination(): void {
+    updatePagination(filteredGroups: any[] = this.groups): void {
         const startIndex = this.currentPage * this.pageSize;
         const endIndex = startIndex + this.pageSize;
-        const pageGroups = this.groups.slice(startIndex, endIndex);
+        const pageGroups = filteredGroups.slice(startIndex, endIndex);
 
-        // Regrouper les groupes affichés (pagés) par spécialité
         this.groupedGroups = {};
         pageGroups.forEach(group => {
             if (!this.groupedGroups[group.specialite]) {
@@ -150,6 +149,7 @@ export class ManageGroupsComponent implements OnInit {
             this.groupedGroups[group.specialite].push(group);
         });
     }
+
 
 
     onPageChange(event: any): void {
@@ -182,8 +182,10 @@ export class ManageGroupsComponent implements OnInit {
             this.http.get<any[]>('http://localhost:8089/api/groups').subscribe(groups => {
                 this.groups = groups;
                 // Réappliquer les filtres actuels
+                //this.loadGroups();
+
                 this.applyFilters();
-                this.loadGroups();
+
 
             });
         });
@@ -226,7 +228,7 @@ export class ManageGroupsComponent implements OnInit {
     }
 */
 
-
+/*
     deleteGroup(id: number): void {
         Swal.fire({
             title: 'Are you sure?',
@@ -240,7 +242,33 @@ export class ManageGroupsComponent implements OnInit {
             if (result.isConfirmed) {
                 this.http.delete(`http://localhost:8089/api/groups/${id}`).subscribe(() => {
                     Swal.fire('Deleted!', 'The group has been deleted.', 'success');
-                    this.loadGroups();
+                    this.groups = groups;
+
+                    this.applyFilters();
+                });
+            }
+        });
+    }
+*/
+    deleteGroup(id: number): void {
+        Swal.fire({
+            title: 'Are you sure?',
+            text: 'This will delete the group permanently.',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Yes, delete it!'
+        }).then(result => {
+            if (result.isConfirmed) {
+                this.http.delete(`http://localhost:8089/api/groups/${id}`).subscribe(() => {
+                    Swal.fire('Deleted!', 'The group has been deleted.', 'success');
+
+                    // Recharger les groupes puis appliquer les filtres
+                    this.http.get<any[]>('http://localhost:8089/api/groups').subscribe(groups => {
+                        this.groups = groups;
+                        this.applyFilters();
+                    });
                 });
             }
         });
@@ -298,14 +326,14 @@ export class ManageGroupsComponent implements OnInit {
     applyFilters(): void {
         let filteredGroups = this.groups;
 
-        // Filtrer par spécialité si sélectionnée
+        // Filtre spécialité
         if (this.selectedSpecialite) {
             filteredGroups = filteredGroups.filter(group =>
                 group.specialite === this.selectedSpecialite
             );
         }
 
-        // Filtrer par nom si texte saisi
+        // Filtre texte
         if (this.searchTerm) {
             const term = this.searchTerm.toLowerCase();
             filteredGroups = filteredGroups.filter(group =>
@@ -313,14 +341,10 @@ export class ManageGroupsComponent implements OnInit {
             );
         }
 
-        // Regrouper les résultats filtrés
-        this.groupedGroups = {};
-        filteredGroups.forEach(group => {
-            if (!this.groupedGroups[group.specialite]) {
-                this.groupedGroups[group.specialite] = [];
-            }
-            this.groupedGroups[group.specialite].push(group);
-        });
+        // Réinitialiser la page si besoin (ex: nouveau filtre)
+        this.currentPage = 0;
+        this.updatePagination(filteredGroups);
     }
+
 
 }
