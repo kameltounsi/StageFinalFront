@@ -75,6 +75,18 @@
                     #requestNgForm="ngForm"
                     (ngSubmit)="submitRequest()"
             >
+                <!-- Full Name Field -->
+                <mat-form-field class="w-full">
+                    <mat-label>Full Name</mat-label>
+                    <input matInput formControlName="fullName" />
+                    <mat-error *ngIf="requestForm.get('fullName')?.hasError('required')">
+                        Full name is required
+                    </mat-error>
+                    <mat-error *ngIf="requestForm.get('fullName')?.hasError('pattern')">
+                        Only letters are allowed
+                    </mat-error>
+                </mat-form-field>
+
                 <!-- Email Field -->
                 <mat-form-field class="w-full">
                     <mat-label>Email address</mat-label>

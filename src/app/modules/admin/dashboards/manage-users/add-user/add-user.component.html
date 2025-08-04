@@ -48,18 +48,20 @@
     <!-- Form -->
     <form [formGroup]="addUserForm" (ngSubmit)="onSubmit()" class="user-form">
         <!-- Full Name -->
+        <!-- Full Name -->
         <mat-form-field appearance="outline" class="form-field">
             <mat-label>Full Name</mat-label>
             <input matInput formControlName="fullName" placeholder="Enter full name" />
-            <mat-error *ngIf="f['fullName'].invalid && (f['fullName'].touched || submitted)">
-                <ng-container *ngIf="f['fullName'].errors?.['required']">
+            <mat-error *ngIf="f['fullName']?.invalid && (f['fullName']?.touched || submitted)">
+                <ng-container *ngIf="f['fullName']?.errors?.['required']">
                     Full name is required
                 </ng-container>
-                <ng-container *ngIf="f['fullName'].errors?.['pattern']">
+                <ng-container *ngIf="f['fullName']?.errors?.['pattern']">
                     Only letters are allowed
                 </ng-container>
             </mat-error>
         </mat-form-field>
+
 
         <!-- Email -->
         <mat-form-field appearance="outline" class="form-field">
@@ -103,6 +105,16 @@
             </mat-select>
             <mat-error *ngIf="f['role'].invalid && (f['role'].touched || submitted)">
                 Role selection is required
+            </mat-error>
+        </mat-form-field>
+        <!-- Groupe Field (visible seulement si Approve) -->
+        <mat-form-field appearance="outline" class="form-field" *ngIf="showGroupField">
+            <mat-label>Group</mat-label>
+            <mat-select formControlName="group">
+                <mat-option *ngFor="let g of groups" [value]="g">{{ g }}</mat-option>
+            </mat-select>
+            <mat-error *ngIf="f['group'].invalid && (f['group'].touched || submitted)">
+                Please select a group
             </mat-error>
         </mat-form-field>
 

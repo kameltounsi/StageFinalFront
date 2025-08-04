@@ -1,4 +1,4 @@
-import { Component, Inject, ViewChild, ElementRef } from '@angular/core';
+import { Component, Inject, ViewChild, ElementRef, OnInit } from '@angular/core';
 import {
     FormBuilder,
     FormGroup,
@@ -10,57 +10,39 @@ import {
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import Swal from 'sweetalert2';
 import { ManageUsersService } from '../manage-users.service';
-import { MatCard } from "@angular/material/card";
-import { MatError, MatFormField, MatLabel } from "@angular/material/form-field";
-import { MatOption } from "@angular/material/core";
-import { MatSelect } from "@angular/material/select";
-import { MatButton } from "@angular/material/button";
-import { MatIcon } from "@angular/material/icon";
-import { MatInput } from "@angular/material/input";
-import { NgForOf, NgIf, NgOptimizedImage } from "@angular/common";
-import { MatProgressSpinner } from "@angular/material/progress-spinner";
 import { map, catchError } from 'rxjs/operators';
 import { of } from 'rxjs';
+import {MatFormField, MatLabel} from "@angular/material/form-field";
+import {MatInput} from "@angular/material/input";
+import {NgForOf, NgIf} from "@angular/common";
+import {MatOption, MatSelect} from "@angular/material/select";
+import {MatButton} from "@angular/material/button";
+import {MatProgressSpinner} from "@angular/material/progress-spinner";
 import {MatMenu, MatMenuItem, MatMenuTrigger} from "@angular/material/menu";
+import {MatIcon} from "@angular/material/icon";
 
 @Component({
     selector: 'app-add-user',
     templateUrl: './add-user.component.html',
     styleUrls: ['./add-user.component.css'],
     standalone: true,
-    imports: [
-        MatLabel,
-        MatCard,
-        ReactiveFormsModule,
-        MatFormField,
-        MatOption,
-        MatSelect,
-        MatButton,
-        MatIcon,
-        MatError,
-        MatInput,
-        NgIf,
-        NgForOf,
-        MatProgressSpinner,
-        NgOptimizedImage,
-        MatMenuTrigger,
-        MatMenu,
-        MatMenuItem
-    ]
+    imports: [ReactiveFormsModule, MatFormField, MatInput, MatLabel, NgIf, MatSelect, MatOption, MatButton, MatProgressSpinner, MatMenuTrigger, MatIcon, MatMenu, MatMenuItem, NgForOf]
 })
-export class AddUserComponent {
+export class AddUserComponent implements OnInit {
     @ViewChild('video') videoRef!: ElementRef<HTMLVideoElement>;
     @ViewChild('canvas') canvasRef!: ElementRef<HTMLCanvasElement>;
 
     addUserForm: FormGroup;
     roles: string[] = ['ADMIN', 'TRAINER', 'STUDENT'];
-    selectedImageFile: File | null = null;
+    groups: any[] = [];
     profileImageUrl: string | ArrayBuffer | null = null;
+    selectedImageFile: File | null = null;
     isLoading = false;
     submitted = false;
 
     showCamera = false;
     videoStream: MediaStream | null = null;
+    showGroupField = false; // ✅ visible uniquement si fromApprove = true
 
     constructor(
         private fb: FormBuilder,
@@ -69,9 +51,12 @@ export class AddUserComponent {
         @Inject(MAT_DIALOG_DATA) public data: any
     ) {
         this.addUserForm = this.fb.group({
-            fullName: ['', [Validators.required, Validators.pattern(/^[A-Za-zÀ-ÿ\s]+$/)]],
+            fullName: [  // ⚡ corriger pour correspondre à ton HTML
+                this.data?.fullname || '',
+                [Validators.required, Validators.pattern(/^[A-Za-zÀ-ÿ\s]+$/)]
+            ],
             email: [
-                '',
+                this.data?.email || '',
                 [Validators.required, Validators.email],
                 [this.emailExistsValidator()]
             ],
@@ -83,7 +68,37 @@ export class AddUserComponent {
                     Validators.pattern(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).+$/)
                 ]
             ],
-            role: ['', Validators.required]
+            role: [
+                { value: this.data?.fromApprove ? 'STUDENT' : '', disabled: this.data?.fromApprove },
+                Validators.required
+            ],
+            group: [''] // ⚡ bien garder le même nom que dans HTML
+        });
+
+        if (this.data?.profilePicture) {
+            this.profileImageUrl = this.data.profilePicture;
+        }
+
+        if (this.data?.fromApprove) {
+            this.showGroupField = true;
+        }
+    }
+
+    ngOnInit(): void {
+        if (this.showGroupField && this.data?.specialite) {
+            this.loadGroups(this.data.specialite);
+        }
+    }
+
+    loadGroups(specialite: string): void {
+        this.userService.getGroupsBySpecialiteAndLevel(specialite, 'A').subscribe({
+            next: (res: any[]) => {
+                this.groups = res;
+                if (this.groups.length === 0) {
+                    Swal.fire('Info', 'No groups found for this speciality.', 'info');
+                }
+            },
+            error: () => Swal.fire('Error', 'Failed to load groups.', 'error')
         });
     }
 
@@ -123,14 +138,13 @@ export class AddUserComponent {
             if (this.videoRef?.nativeElement) {
                 this.videoRef.nativeElement.srcObject = this.videoStream;
             }
-        } catch (error) {
+        } catch {
             Swal.fire('Error', 'Cannot access camera.', 'error');
         }
     }
 
     capturePhoto(): void {
         if (!this.videoRef || !this.canvasRef) return;
-
         const video = this.videoRef.nativeElement;
         const canvas = this.canvasRef.nativeElement;
         const context = canvas.getContext('2d');
@@ -168,52 +182,31 @@ export class AddUserComponent {
 
         this.isLoading = true;
         const formData = new FormData();
-        formData.append('fullname', this.addUserForm.get('fullName')?.value);
+        formData.append('fullname', this.addUserForm.get('fullname')?.value);
         formData.append('email', this.addUserForm.get('email')?.value);
         formData.append('password', this.addUserForm.get('password')?.value);
-        formData.append('role', this.addUserForm.get('role')?.value);
+        formData.append('role', this.addUserForm.get('role')?.value || 'STUDENT');
+
+        if (this.showGroupField) {
+            formData.append('groupeId', this.addUserForm.get('groupe')?.value);
+        }
+
         if (this.selectedImageFile) {
             formData.append('image', this.selectedImageFile);
         }
 
-        // ✅ Envoi de la langue choisie
-        formData.append('lang', this.getSelectedLang());
-
         this.userService.addUser(formData).subscribe({
-            next: (res) => {
+            next: () => {
                 this.isLoading = false;
-                Swal.fire({
-                    icon: 'success',
-                    title: 'User Added',
-                    text: res?.message || `The user ${this.addUserForm.get('fullName')?.value} has been successfully added.`,
-                    confirmButtonColor: '#3085d6'
-                }).then(() => this.dialogRef.close('success'));
+                Swal.fire('Success', 'User added successfully!', 'success')
+                    .then(() => this.dialogRef.close('success'));
             },
-            error: (err) => {
+            error: () => {
                 this.isLoading = false;
-                let errorMessage = err.error?.message || 'User could not be added.';
-                if (err.status === 409) errorMessage = 'A user with this email already exists.';
-                Swal.fire({ icon: 'error', title: 'Error', text: errorMessage, confirmButtonColor: '#d33' });
+                Swal.fire('Error', 'User could not be added.', 'error');
             }
         });
     }
-
-    getSelectedLang(): string {
-        const savedLang = localStorage.getItem('lang');
-        if (savedLang) {
-            return savedLang;
-        }
-        // Exemple : si le navigateur est en arabe
-        if (navigator.language.startsWith('ar')) {
-            return 'ar';
-        }
-        return navigator.language.startsWith('fr') ? 'fr' : 'en';
-    }
-
-  /*  getSelectedLang(): string {
-        return 'ar';  // ⚡ Forcer arabe pour le test
-    }
-*/
 
     onCancel(): void {
         this.dialogRef.close('cancel');

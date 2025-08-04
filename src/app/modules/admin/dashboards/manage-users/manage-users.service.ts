@@ -54,6 +54,12 @@ export class ManageUsersService {
     updateRequestStatus(requestId: number, status: 'APPROVED' | 'REJECTED'): Observable<any> {
         return this.http.put(`${this.apiUrl}/requests/${requestId}/status`, { status });
     }
+    getGroupsBySpecialiteAndLevel(specialite: string, level: string): Observable<any[]> {
+        return this.http.get<any[]>(`${this.apiUrl}/groups/by-specialite`, {
+            params: { specialite, level }
+        });
+    }
+
 
 
 }

@@ -5,16 +5,26 @@
             <img [src]="req.profilePicture || '/default-avatar.png'" alt="avatar">
         </div>
         <div class="request-info">
-            <p class="request-email">{{ req.email }}</p>
+            <!-- ✅ Full Name -->
+            <p class="request-fullname">
+                <strong>Full Name:</strong> {{ req.fullname || 'Not provided' }}
+            </p>
+            <p class="request-email">
+                <strong>Email:</strong> {{ req.email }}
+            </p>
             <p class="request-speciality">
-                <strong>Speciality:</strong> {{ req.specialite }}
+                <strong>Speciality requested:</strong> {{ req.specialite }}
             </p>
         </div>
         <div class="request-actions">
-            <button mat-stroked-button color="primary" class="approve-btn" (click)="approveRequest(req.id)">
+            <button mat-stroked-button color="primary"
+                    class="approve-btn"
+                    (click)="approveRequest(req)">
                 Approve
             </button>
-            <button mat-stroked-button color="warn" class="reject-btn" (click)="rejectRequest(req.id)">
+            <button mat-stroked-button color="warn"
+                    class="reject-btn"
+                    (click)="rejectRequest(req.id)">
                 Reject
             </button>
         </div>

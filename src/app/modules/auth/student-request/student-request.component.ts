@@ -82,12 +82,12 @@ export class StudentRequestComponent implements OnInit {
 
     ngOnInit(): void {
         this.requestForm = this._formBuilder.group({
+            fullName: ['', [Validators.required, Validators.pattern(/^[A-Za-zÀ-ÿ\s]+$/)]],
             email: ['', [Validators.required, Validators.email]],
             specialite: ['', Validators.required],
             agreements: ['', Validators.requiredTrue],
         });
     }
-
     submitRequest(): void {
         if (this.requestForm.invalid) {
             Swal.fire({
@@ -103,8 +103,10 @@ export class StudentRequestComponent implements OnInit {
         this.requestForm.disable();
 
         const formData = new FormData();
+        formData.append('fullname', this.requestForm.get('fullname')?.value); // ✅ Ajout
         formData.append('email', this.requestForm.get('email')?.value);
         formData.append('specialite', this.requestForm.get('specialite')?.value);
+
         if (this.selectedImageFile) {
             formData.append('image', this.selectedImageFile);
         }
@@ -123,7 +125,7 @@ export class StudentRequestComponent implements OnInit {
                     timer: 2500,
                     timerProgressBar: true
                 }).then(() => {
-                    this._router.navigate(['/sign-in']); // ✅ redirection après succès
+                    this._router.navigate(['/sign-in']);
                 });
             },
             (err) => {
@@ -131,7 +133,6 @@ export class StudentRequestComponent implements OnInit {
                 this.requestForm.enable();
 
                 let errorMessage = 'Something went wrong. Please try again.';
-
                 if (err.status === 409) {
                     errorMessage = 'This email is already registered!';
                 }
@@ -145,6 +146,7 @@ export class StudentRequestComponent implements OnInit {
             }
         );
     }
+
 
 
 

@@ -4,7 +4,7 @@ import {
     MAT_DIALOG_DATA,
     MatDialogContent,
     MatDialogActions,
-    MatDialogClose, MatDialogTitle
+    MatDialogClose, MatDialogTitle, MatDialog
 } from '@angular/material/dialog';
 import { ManageUsersService } from '../manage-users.service';
 import Swal from 'sweetalert2';
@@ -12,6 +12,7 @@ import {MatProgressSpinner} from "@angular/material/progress-spinner";
 import {NgForOf, NgIf} from "@angular/common";
 import {MatCard} from "@angular/material/card";
 import {MatButton} from "@angular/material/button";
+import {AddUserComponent} from "../add-user/add-user.component";
 
 @Component({
     selector: 'app-manage-requests',
@@ -37,6 +38,8 @@ export class ManageRequestsComponent implements OnInit {
     constructor(
         private userService: ManageUsersService,
         public dialogRef: MatDialogRef<ManageRequestsComponent>,
+        private dialog: MatDialog, // ✅ Ajout ici
+
         @Inject(MAT_DIALOG_DATA) public data: any
     ) {}
 
@@ -53,15 +56,26 @@ export class ManageRequestsComponent implements OnInit {
         });
     }
 
-    approveRequest(requestId: number): void {
-        this.userService.updateRequestStatus(requestId, 'APPROVED').subscribe({
-            next: () => {
-                Swal.fire('Success', 'Request approved successfully!', 'success');
-                this.requests = this.requests.filter(r => r.id !== requestId);
-            },
-            error: () => Swal.fire('Error', 'Failed to approve request', 'error')
+
+    approveRequest(request: any): void {
+        this.dialog.open(AddUserComponent, {
+            width: '500px',
+            disableClose: true,
+            data: {
+                fullname: request.fullname,
+                email: request.email,
+                profilePicture: request.profilePicture || 'images/avatars/default-avatar.png',
+                specialite: request.specialite,
+                role: 'STUDENT',
+                fromApprove: true   // ✅ flag pour savoir que ça vient d'Approve
+            }
         });
+
+        this.dialogRef.close();
     }
+
+
+
 
     rejectRequest(requestId: number): void {
         this.userService.updateRequestStatus(requestId, 'REJECTED').subscribe({
