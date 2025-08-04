@@ -117,6 +117,17 @@
                 Please select a group
             </mat-error>
         </mat-form-field>
+        <!-- Specialité -->
+        <mat-form-field appearance="outline" class="form-field"
+                        *ngIf="addUserForm.get('role')?.value === 'STUDENT' || addUserForm.get('role')?.value === 'TRAINER'">
+            <mat-label>Speciality</mat-label>
+            <mat-select formControlName="specialite">
+                <mat-option *ngFor="let s of specialites" [value]="s">{{ s }}</mat-option>
+            </mat-select>
+            <mat-error *ngIf="f['specialite']?.invalid && (f['specialite']?.touched || submitted)">
+                Please select a speciality
+            </mat-error>
+        </mat-form-field>
 
         <!-- Buttons -->
         <div class="dialog-actions">

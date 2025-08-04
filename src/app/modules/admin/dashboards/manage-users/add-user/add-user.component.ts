@@ -43,6 +43,23 @@ export class AddUserComponent implements OnInit {
     showCamera = false;
     videoStream: MediaStream | null = null;
     showGroupField = false; // ✅ visible uniquement si fromApprove = true
+    specialites: string[] = [
+        'Cybersecurity & Ethical Hacking',
+        'Web Development',
+        'Mobile Application Development',
+        'Graphic Design & Multimedia',
+        'Digital Marketing & Social Media Management',
+        'Electrical Installation & Building Wiring',
+        'Plumbing & Sanitary Installations',
+        'Masonry & Concrete Works',
+        'Carpentry & Woodworking',
+        'HVAC Systems',
+        'Accounting & Financial Management',
+        'Human Resources Management',
+        'Office Administration & Secretarial Studies',
+        'Sales & Commercial Techniques',
+        'Logistics & Supply Chain Management'
+    ];
 
     constructor(
         private fb: FormBuilder,
@@ -72,7 +89,9 @@ export class AddUserComponent implements OnInit {
                 { value: this.data?.fromApprove ? 'STUDENT' : '', disabled: this.data?.fromApprove },
                 Validators.required
             ],
-            group: [''] // ⚡ bien garder le même nom que dans HTML
+            group: [''],
+            specialite: [''] ,
+// ⚡ bien garder le même nom que dans HTML
         });
 
         if (this.data?.profilePicture) {
@@ -275,6 +294,7 @@ export class AddUserComponent implements OnInit {
         formData.append('email', this.addUserForm.get('email')?.value);
         formData.append('password', this.addUserForm.get('password')?.value);
         formData.append('role', this.addUserForm.get('role')?.value || 'STUDENT');
+        formData.append('specialite', this.addUserForm.get('specialite')?.value || '');
 
         if (this.showGroupField) {
             formData.append('groupeId', this.addUserForm.get('group')?.value);
