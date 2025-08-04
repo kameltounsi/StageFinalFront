@@ -65,6 +65,7 @@ export class ManageRequestsComponent implements OnInit {
                 fullname: request.fullname,
                 email: request.email,
                 profilePicture: request.profilePicture || 'images/avatars/default-avatar.png',
+                requestId: request.id,  // ✅ IMPORTANT
                 specialite: request.specialite,
                 role: 'STUDENT',
                 fromApprove: true   // ✅ flag pour savoir que ça vient d'Approve

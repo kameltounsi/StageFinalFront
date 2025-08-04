@@ -103,10 +103,9 @@ export class StudentRequestComponent implements OnInit {
         this.requestForm.disable();
 
         const formData = new FormData();
-        formData.append('fullname', this.requestForm.get('fullname')?.value); // ✅ Ajout
+        formData.append('fullname', this.requestForm.get('fullName')?.value); // ✅ Ajout
         formData.append('email', this.requestForm.get('email')?.value);
         formData.append('specialite', this.requestForm.get('specialite')?.value);
-
         if (this.selectedImageFile) {
             formData.append('image', this.selectedImageFile);
         }

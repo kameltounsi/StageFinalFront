@@ -51,8 +51,8 @@
 }
 
 .avatar-preview {
-    width: 100px;   /* 📌 réduit la photo */
-    height: 100px;  /* 📌 réduit la photo */
+    width: 100px;
+    height: 100px;
     border-radius: 50%;
     border: 2px solid #eaeaea;
     object-fit: cover;
