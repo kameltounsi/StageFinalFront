@@ -1,18 +1,30 @@
-/* Dialog Container */
 .add-user-dialog {
     display: flex;
     flex-direction: column;
-    justify-content: center; /* centre verticalement le contenu */
+    justify-content: flex-start; /* au lieu de center */
     align-items: center;
-    padding: 18px; /* réduit */
+    padding: 18px;
     min-width: 300px;
-    max-width: 380px;
-    min-height: 430px; /* ajusté */
+    max-width: 420px; /* un peu plus large */
+    max-height: 90vh; /* limite à 90% de la hauteur de l'écran */
+    overflow-y: auto; /* active le scroll vertical si nécessaire */
     background: #fff;
     border-radius: 16px;
     box-shadow: 0 6px 18px rgba(0, 0, 0, 0.12);
     animation: fadeIn 0.35s ease;
     margin: auto;
+}
+
+/* Toujours afficher une petite barre de scroll stylée */
+.add-user-dialog::-webkit-scrollbar {
+    width: 6px;
+}
+.add-user-dialog::-webkit-scrollbar-thumb {
+    background: linear-gradient(135deg, #3f51b5, #6574cd);
+    border-radius: 8px;
+}
+.add-user-dialog::-webkit-scrollbar-track {
+    background: #f1f1f1;
 }
 
 /* Header */

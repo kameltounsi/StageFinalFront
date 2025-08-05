@@ -1,11 +1,9 @@
 <div class="users-page">
-
-    <!-- Header centré -->
+    <!-- Header -->
     <div class="users-header">
         <button mat-flat-button color="primary" (click)="openAddUserDialog()">
             + Add User
         </button>
-        <!-- Manage Requests avec compteur -->
         <div class="manage-requests-container">
             <button mat-flat-button color="primary" class="manage-requests-btn" (click)="openManageRequestsDialog()">
                 Manage Requests
@@ -15,7 +13,9 @@
 
         <mat-form-field appearance="outline" class="search-field">
             <mat-label>Search</mat-label>
-            <input matInput placeholder="Search by name or email" [(ngModel)]="searchQuery" (input)="applyFilters()" />
+            <input matInput placeholder="Search by name or email"
+                   [(ngModel)]="searchQuery"
+                   (input)="applyFilters()" />
         </mat-form-field>
 
         <mat-form-field appearance="outline" class="filter-field">
@@ -42,12 +42,40 @@
         <mat-card *ngFor="let user of pagedUsers" class="user-card">
             <div class="user-card-content">
                 <div class="user-info">
-                    <img [src]="user.profilePicture" alt="Avatar" class="avatar" />
+                    <img [src]="user.profilePicture || 'assets/default-avatar.png'" alt="Avatar" class="avatar" />
                     <div class="user-texts">
                         <h3 class="user-name">{{ user.fullName }}</h3>
                         <p class="user-email">{{ user.email }}</p>
+
+                        <!-- Student: afficher la classe -->
+                        <ng-container *ngIf="user.role === 'STUDENT'">
+                            <div class="student-class">
+                                <mat-icon>school</mat-icon>
+                                <span><strong>Class:</strong> {{ user.studentClass }}</span>
+                            </div>
+                        </ng-container>
+
+                        <!-- Trainer: afficher la liste des classes -->
+                        <ng-container *ngIf="user.role === 'TRAINER'">
+                            <div class="trainer-classes">
+                                <div class="label">
+                                    <mat-icon>groups</mat-icon>
+                                    <strong>Groups:</strong>
+                                </div>
+                                <ul class="trainer-group-list">
+                                    <li *ngFor="let grp of user.trainerClasses">
+                                        • {{ grp }}
+                                    </li>
+                                    <li *ngIf="!user.trainerClasses?.length" class="no-groups">
+                                        No groups assigned
+                                    </li>
+                                </ul>
+                            </div>
+                        </ng-container>
                     </div>
                 </div>
+
+                <!-- Rôle -->
                 <div class="user-role">
                     <mat-form-field appearance="outline" class="role-field">
                         <mat-label>Role</mat-label>
@@ -66,5 +94,4 @@
                 (page)="onPageChange($event)">
         </mat-paginator>
     </div>
-
 </div>

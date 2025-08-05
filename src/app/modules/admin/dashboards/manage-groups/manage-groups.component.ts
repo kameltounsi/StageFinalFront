@@ -357,6 +357,4 @@ export class ManageGroupsComponent implements OnInit {
         this.currentPage = 0;
         this.updatePagination(filteredGroups);
     }
-
-
 }

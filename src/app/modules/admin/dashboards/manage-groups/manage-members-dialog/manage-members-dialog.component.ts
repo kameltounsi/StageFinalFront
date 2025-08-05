@@ -3,6 +3,7 @@ import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { HttpClient } from '@angular/common/http';
 import { NgForOf, NgIf } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import Swal from 'sweetalert2';
 
 // Angular Material
 import { MatButtonModule } from '@angular/material/button';
@@ -11,7 +12,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatSelectModule } from '@angular/material/select';
 import { MatInputModule } from '@angular/material/input';
 import { MatCardModule } from '@angular/material/card';
-import {MatDivider} from "@angular/material/divider";
+import { MatDivider } from "@angular/material/divider";
 
 @Component({
     selector: 'app-manage-members-dialog',
@@ -46,17 +47,16 @@ export class ManageMembersDialogComponent {
         this.group = data.group;
         this.group.students = this.group.students || [];
         this.group.trainers = this.group.trainers || [];
-        this.loadGroup(); // charge groupe complet au départ
+        this.loadGroup();
     }
 
-    // 🔹 Récupère le groupe depuis le backend
     loadGroup(): void {
         this.http.get<any>(`http://localhost:8089/api/groups/${this.group.id}`)
             .subscribe(res => {
                 this.group = res;
                 this.group.students = this.group.students || [];
                 this.group.trainers = this.group.trainers || [];
-                this.loadAvailableMembers(); // recharge les listes filtrées
+                this.loadAvailableMembers();
             });
     }
 
@@ -68,34 +68,110 @@ export class ManageMembersDialogComponent {
             .subscribe(res => this.availableTrainers = res);
     }
 
-
     addStudent(): void {
         if (!this.selectedStudentId) return;
-        this.http.post(`http://localhost:8089/api/groups/${this.group.id}/add-student/${this.selectedStudentId}`, {})
-            .subscribe(() => {
-                this.selectedStudentId = undefined;
-                this.loadGroup(); // ✅ recharge liste actualisée
-            });
+        const student = this.availableStudents.find(s => s.id === this.selectedStudentId);
+
+        Swal.fire({
+            title: '⚠️ Confirmation',
+            text: `Voulez-vous vraiment ajouter ${student?.fullName} au groupe ${this.group.nom} ?`,
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonText: 'Oui, ajouter',
+            cancelButtonText: 'Annuler',
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                this.http.post(`http://localhost:8089/api/groups/${this.group.id}/add-student/${this.selectedStudentId}`, {})
+                    .subscribe({
+                        next: () => {
+                            this.selectedStudentId = undefined;
+                            this.loadGroup();
+                            Swal.fire('✅ Succès', `${student?.fullName} a été ajouté au groupe ${this.group.nom}.`, 'success');
+                        },
+                        error: () => Swal.fire('❌ Erreur', 'Impossible d’ajouter l’étudiant.', 'error')
+                    });
+            }
+        });
     }
 
     addTrainer(): void {
         if (!this.selectedTrainerId) return;
-        this.http.post(`http://localhost:8089/api/groups/${this.group.id}/add-trainer/${this.selectedTrainerId}`, {})
-            .subscribe(() => {
-                this.selectedTrainerId = undefined;
-                this.loadGroup(); // 🔥 recharge les trainers depuis le backend
-            });
+        const trainer = this.availableTrainers.find(t => t.id === this.selectedTrainerId);
+
+        Swal.fire({
+            title: '⚠️ Confirmation',
+            text: `Voulez-vous vraiment ajouter ${trainer?.fullName} au groupe ${this.group.nom} ?`,
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonText: 'Oui, ajouter',
+            cancelButtonText: 'Annuler',
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                this.http.post(`http://localhost:8089/api/groups/${this.group.id}/add-trainer/${this.selectedTrainerId}`, {})
+                    .subscribe({
+                        next: () => {
+                            this.selectedTrainerId = undefined;
+                            this.loadGroup();
+                            Swal.fire('✅ Succès', `${trainer?.fullName} a été ajouté au groupe ${this.group.nom}.`, 'success');
+                        },
+                        error: () => Swal.fire('❌ Erreur', 'Impossible d’ajouter le formateur.', 'error')
+                    });
+            }
+        });
     }
 
-
     removeStudent(studentId: number): void {
-        this.http.delete(`http://localhost:8089/api/groups/${this.group.id}/remove-student/${studentId}`)
-            .subscribe(() => this.loadGroup()); // ✅ recharge liste actualisée
+        const student = this.group.students.find((s: any) => s.id === studentId);
+        Swal.fire({
+            title: '⚠️ Confirmation',
+            text: `Êtes-vous sûr de vouloir supprimer ${student?.fullName} du groupe ${this.group.nom} ?`,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Oui, supprimer',
+            cancelButtonText: 'Annuler',
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                this.http.delete(`http://localhost:8089/api/groups/${this.group.id}/remove-student/${studentId}`, { responseType: 'text' as 'json' })
+                    .subscribe({
+                        next: () => {
+                            this.loadGroup();
+                            Swal.fire('✅ Supprimé', `${student?.fullName} a été retiré du groupe ${this.group.nom}.`, 'success');
+                        },
+                        error: () => Swal.fire('❌ Erreur', 'Impossible de supprimer l’étudiant.', 'error')
+                    });
+            }
+        });
     }
 
     removeTrainer(trainerId: number): void {
-        this.http.delete(`http://localhost:8089/api/groups/${this.group.id}/remove-trainer/${trainerId}`)
-            .subscribe(() => this.loadGroup()); // ✅ recharge liste actualisée
+        const trainer = this.group.trainers.find((t: any) => t.id === trainerId);
+        Swal.fire({
+            title: '⚠️ Confirmation',
+            text: `Êtes-vous sûr de vouloir supprimer ${trainer?.fullName} du groupe ${this.group.nom} ?`,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Oui, supprimer',
+            cancelButtonText: 'Annuler',
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                this.http.delete(`http://localhost:8089/api/groups/${this.group.id}/remove-trainer/${trainerId}`, { responseType: 'text' as 'json' })
+                    .subscribe({
+                        next: () => {
+                            this.loadGroup();
+                            Swal.fire('✅ Supprimé', `${trainer?.fullName} a été retiré du groupe ${this.group.nom}.`, 'success');
+                        },
+                        error: () => Swal.fire('❌ Erreur', 'Impossible de supprimer le formateur.', 'error')
+                    });
+            }
+        });
     }
 
     close(): void {

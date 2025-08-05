@@ -12,6 +12,8 @@ import {NgForOf, NgIf} from "@angular/common";
 import { FormsModule } from '@angular/forms';
 import { MatInput } from "@angular/material/input";
 import { ManageRequestsComponent } from './manage-requests/manage-requests.component';
+import {MatChip} from "@angular/material/chips";
+import {MatIcon} from "@angular/material/icon";
 
 @Component({
     selector: 'app-manage-users',
@@ -28,7 +30,9 @@ import { ManageRequestsComponent } from './manage-requests/manage-requests.compo
         FormsModule,
         MatLabel,
         MatInput,
-        NgIf
+        NgIf,
+        MatChip,
+        MatIcon
     ],
     standalone: true
 })

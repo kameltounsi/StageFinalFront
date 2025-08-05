@@ -49,11 +49,7 @@ export class ManageUsersService {
     getPendingRequests(): Observable<any[]> {
         return this.http.get<any[]>(`${this.apiUrl}/requests/pending`);
     }
-/*
-    // ⚡ Nouvelle méthode : mettre à jour le statut (approve/reject)
-    updateRequestStatus(requestId: number, status: 'APPROVED' | 'REJECTED'): Observable<any> {
-        return this.http.put(`${this.apiUrl}/requests/${requestId}/status`, { status });
-    }*/
+
     updateRequestStatus(requestId: number, status: string) {
         return this.http.put(`${this.apiUrl}/requests/${requestId}/status`, null, {
             params: { status }

@@ -89,8 +89,11 @@ export class AddUserComponent implements OnInit {
                 { value: this.data?.fromApprove ? 'STUDENT' : '', disabled: this.data?.fromApprove },
                 Validators.required
             ],
+            specialite: [
+                { value: this.data?.specialite || '', disabled: this.data?.fromApprove },
+                Validators.required
+            ],
             group: [''],
-            specialite: [''] ,
 // ⚡ bien garder le même nom que dans HTML
         });
 
@@ -185,49 +188,7 @@ export class AddUserComponent implements OnInit {
         this.showCamera = false;
         this.videoStream?.getTracks().forEach(track => track.stop());
     }
-/*
-    onSubmit(): void {
-        this.submitted = true;
-        if (this.addUserForm.invalid) {
-            this.addUserForm.markAllAsTouched();
-            Swal.fire({
-                icon: 'warning',
-                title: 'Invalid Form',
-                text: 'Please fill in all required fields correctly before submitting.',
-                confirmButtonColor: '#f59e0b'
-            });
-            return;
-        }
 
-        this.isLoading = true;
-        const formData = new FormData();
-        formData.append('fullname', this.addUserForm.get('fullname')?.value);
-        formData.append('email', this.addUserForm.get('email')?.value);
-        formData.append('password', this.addUserForm.get('password')?.value);
-        formData.append('role', this.addUserForm.get('role')?.value || 'STUDENT');
-
-        if (this.showGroupField) {
-            formData.append('groupeId', this.addUserForm.get('groupe')?.value);
-        }
-
-        if (this.selectedImageFile) {
-            formData.append('image', this.selectedImageFile);
-        }
-
-        this.userService.addUser(formData).subscribe({
-            next: () => {
-                this.isLoading = false;
-                Swal.fire('Success', 'User added successfully!', 'success')
-                    .then(() => this.dialogRef.close('success'));
-            },
-            error: () => {
-                this.isLoading = false;
-                Swal.fire('Error', 'User could not be added.', 'error');
-            }
-        });
-    }
-*/
-    /*
     onSubmit(): void {
         this.submitted = true;
         if (this.addUserForm.invalid) {
@@ -247,54 +208,11 @@ export class AddUserComponent implements OnInit {
         formData.append('email', this.addUserForm.get('email')?.value);
         formData.append('password', this.addUserForm.get('password')?.value);
         formData.append('role', this.addUserForm.get('role')?.value || 'STUDENT');
-
-        if (this.showGroupField) {
-            formData.append('groupeId', this.addUserForm.get('group')?.value);
-            formData.append('requestId', this.data?.requestId); // ✅ ajouter l'ID de la requête
-        }
-
-        if (this.selectedImageFile) {
-            formData.append('image', this.selectedImageFile);
-        }
-
-        this.userService.addUser(formData).subscribe({
-            next: () => {
-                this.isLoading = false;
-                // ✅ Appeler backend pour changer le statut en ACCEPTED
-                if (this.data?.requestId) {
-                    this.userService.updateRequestStatus(this.data.requestId, 'ACCEPTED').subscribe();
-                }
-
-                Swal.fire('Success', 'User added and request accepted!', 'success')
-                    .then(() => this.dialogRef.close('success'));
-            },
-            error: () => {
-                this.isLoading = false;
-                Swal.fire('Error', 'User could not be added.', 'error');
-            }
-        });
-    }
-*/
-    onSubmit(): void {
-        this.submitted = true;
-        if (this.addUserForm.invalid) {
-            this.addUserForm.markAllAsTouched();
-            Swal.fire({
-                icon: 'warning',
-                title: 'Invalid Form',
-                text: 'Please fill in all required fields correctly before submitting.',
-                confirmButtonColor: '#f59e0b'
-            });
-            return;
-        }
-
-        this.isLoading = true;
-        const formData = new FormData();
-        formData.append('fullname', this.addUserForm.get('fullName')?.value);
-        formData.append('email', this.addUserForm.get('email')?.value);
-        formData.append('password', this.addUserForm.get('password')?.value);
-        formData.append('role', this.addUserForm.get('role')?.value || 'STUDENT');
-        formData.append('specialite', this.addUserForm.get('specialite')?.value || '');
+    //    formData.append('specialite', this.addUserForm.get('specialite')?.value || '');
+        formData.append(
+            'specialite',
+            this.addUserForm.get('specialite')?.value || this.data?.specialite || ''
+        );
 
         if (this.showGroupField) {
             formData.append('groupeId', this.addUserForm.get('group')?.value);

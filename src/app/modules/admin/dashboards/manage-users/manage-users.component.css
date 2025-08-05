@@ -294,3 +294,142 @@ button[mat-flat-button][color="primary"]:hover {
     70% { transform: scale(1.1); box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
     100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
 }
+/* Style général pour les chips */
+.mat-chip-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 6px;
+}
+
+/* Style pour les chips d'étudiant */
+.mat-chip.primary-chip {
+    background: linear-gradient(135deg, #3f51b5, #6574cd);
+    color: #fff;
+    font-weight: 500;
+    border-radius: 16px;
+    padding: 0 10px;
+}
+
+/* Style pour les chips de trainer */
+.mat-chip.trainer-chip {
+    background: #e3f2fd; /* bleu clair */
+    color: #0d47a1;
+    font-weight: 500;
+    border-radius: 16px;
+    padding: 0 10px;
+    transition: all 0.3s ease;
+}
+
+.mat-chip.trainer-chip:hover {
+    background: #bbdefb;
+    transform: translateY(-2px);
+    cursor: default;
+}
+
+/* Chip vide (no groups assigned) */
+.mat-chip.empty-chip {
+    background: #f5f5f5;
+    color: #888;
+    font-style: italic;
+}
+
+.user-texts {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+/* Section classe de l'étudiant */
+.student-class {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 8px;
+    font-size: 14px;
+    color: #444;
+    font-weight: 500;
+}
+
+.student-class mat-icon {
+    font-size: 20px;
+    color: #3f51b5;
+}
+
+/* Chip pour étudiant */
+.primary-chip {
+    background: linear-gradient(135deg, #4f46e5, #6366f1);
+    color: white !important;
+    font-weight: 600;
+    border-radius: 20px;
+    padding: 4px 12px;
+    box-shadow: 0 2px 6px rgba(79, 70, 229, 0.3);
+}
+
+/* Section groupes du trainer */
+.trainer-classes {
+    margin-top: 8px;
+}
+
+.trainer-classes .label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 14px;
+    font-weight: 600;
+    color: #0d47a1;
+    margin-bottom: 4px;
+}
+
+.trainer-classes mat-icon {
+    font-size: 20px;
+    color: #1565c0;
+}
+
+/* Chips de trainer */
+.trainer-chip {
+    background: #e3f2fd;
+    color: #0d47a1;
+    font-weight: 500;
+    border-radius: 16px;
+    padding: 4px 10px;
+    box-shadow: 0 2px 4px rgba(13, 71, 161, 0.2);
+    transition: transform 0.2s ease, background 0.2s ease;
+}
+
+.trainer-chip:hover {
+    background: #bbdefb;
+    transform: translateY(-2px);
+}
+
+/* Chip vide (pas de groupes) */
+.empty-chip {
+    background: #f5f5f5;
+    color: #777 !important;
+    font-style: italic;
+    padding: 4px 10px;
+    border-radius: 16px;
+}
+/* Liste des groupes pour trainer */
+.trainer-classes {
+    margin-top: 8px;
+    font-size: 14px;
+    color: #333;
+}
+
+.trainer-group-list {
+    margin: 6px 0 0 24px; /* décalage sous l'icône */
+    padding: 0;
+    list-style: none;
+}
+
+.trainer-group-list li {
+    margin-bottom: 4px;
+    font-weight: 500;
+    color: #0d47a1;
+}
+
+.trainer-group-list li.no-groups {
+    color: #888;
+    font-style: italic;
+}
+
