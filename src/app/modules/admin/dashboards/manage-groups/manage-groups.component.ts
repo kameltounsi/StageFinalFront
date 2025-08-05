@@ -10,6 +10,8 @@ import {MatButton, MatIconButton} from "@angular/material/button";
 import {MatInput} from "@angular/material/input";
 import {MatIcon} from "@angular/material/icon";
 import {MatPaginator} from "@angular/material/paginator";
+import { MatDialog } from '@angular/material/dialog';
+import { ManageMembersDialogComponent } from './manage-members-dialog/manage-members-dialog.component';
 
 @Component({
     selector: 'app-manage-groups',
@@ -60,7 +62,7 @@ export class ManageGroupsComponent implements OnInit {
 
     niveaux: string[] = ["A", "B"];
 
-    constructor(private fb: FormBuilder, private http: HttpClient) {
+    constructor(private fb: FormBuilder, private http: HttpClient ,   private dialog: MatDialog) {
         this.groupForm = this.fb.group({
             specialite: ['', Validators.required],
             niveau: ['', Validators.required],
@@ -157,6 +159,16 @@ export class ManageGroupsComponent implements OnInit {
         this.pageSize = event.pageSize;
         this.updatePagination();
     }
+    openManageMembersDialog(group: any): void {
+        this.dialog.open(ManageMembersDialogComponent, {
+            width: '90vw',
+            height: '85vh',
+            maxWidth: '1200px',
+            panelClass: 'custom-dialog-container',
+            data: { group }
+        });
+    }
+
 
     addGroup(): void {
         if (this.groupForm.invalid) {

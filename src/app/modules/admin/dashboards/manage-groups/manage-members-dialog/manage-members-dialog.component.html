@@ -1,0 +1,108 @@
+<mat-card class="dialog-card">
+    <mat-card-header>
+        <mat-card-title>
+            <mat-icon color="primary">groups</mat-icon>
+            Manage Members for {{ group.nom }}
+        </mat-card-title>
+    </mat-card-header>
+
+    <mat-card-content>
+
+        <!-- Students -->
+        <section class="section-block">
+            <h3 class="section-title">
+                <mat-icon color="accent">school</mat-icon>
+                Students ({{ group.students?.length }}/{{ 25 }})
+            </h3>
+
+            <div *ngIf="group.students?.length; else noStudents" class="member-list">
+                <mat-card *ngFor="let student of group.students" class="member-card">
+                    <img [src]="student.profilePicture || 'assets/default-avatar.png'"
+                         alt="avatar"
+                         class="avatar"/>
+                    <div class="member-info">
+                        <div class="member-name">{{ student.fullName }}</div>
+                        <div class="member-email">{{ student.email }}</div>
+                    </div>
+                    <button mat-icon-button color="warn" (click)="removeStudent(student.id)">
+                        <mat-icon>delete</mat-icon>
+                    </button>
+                </mat-card>
+            </div>
+            <ng-template #noStudents>
+                <p class="empty-text">No students in this group yet.</p>
+            </ng-template>
+
+            <mat-form-field appearance="outline" class="full-width">
+                <mat-label>Add Student</mat-label>
+                <mat-select [(ngModel)]="selectedStudentId">
+                    <mat-option *ngFor="let student of availableStudents" [value]="student.id">
+                        <div class="option-content">
+                            <img [src]="student.profilePicture || 'assets/default-avatar.png'" class="avatar-small"/>
+                            <span>{{ student.fullName }} - {{ student.email }}</span>
+                        </div>
+                    </mat-option>
+                </mat-select>
+            </mat-form-field>
+
+            <button mat-raised-button color="primary" class="add-btn"
+                    (click)="addStudent()"
+                    [disabled]="group.students?.length >= (group.studentCapacity || 25)">
+                <mat-icon>person_add</mat-icon> Add Student
+            </button>
+        </section>
+
+        <mat-divider></mat-divider>
+
+        <!-- Trainers -->
+        <section class="section-block">
+            <h3 class="section-title">
+                <mat-icon color="accent">person</mat-icon>
+                Trainers ({{ group.trainers?.length }}/{{ group.trainerCapacity || 2 }})
+            </h3>
+
+            <div *ngIf="group.trainers?.length; else noTrainers" class="member-list">
+                <mat-card *ngFor="let trainer of group.trainers" class="member-card">
+                    <img [src]="trainer.profilePicture || 'assets/default-avatar.png'"
+                         alt="avatar"
+                         class="avatar"/>
+                    <div class="member-info">
+                        <div class="member-name">{{ trainer.fullName }}</div>
+                        <div class="member-email">{{ trainer.email }}</div>
+                    </div>
+                    <button mat-icon-button color="warn" (click)="removeTrainer(trainer.id)">
+                        <mat-icon>delete</mat-icon>
+                    </button>
+                </mat-card>
+            </div>
+            <ng-template #noTrainers>
+                <p class="empty-text">No trainers assigned yet.</p>
+            </ng-template>
+
+            <mat-form-field appearance="outline" class="full-width">
+                <mat-label>Add Trainer</mat-label>
+                <mat-select [(ngModel)]="selectedTrainerId">
+                    <mat-option *ngFor="let trainer of availableTrainers" [value]="trainer.id">
+                        <div class="option-content">
+                            <img [src]="trainer.profilePicture || 'assets/default-avatar.png'" class="avatar-small"/>
+                            <span>{{ trainer.fullName }} - {{ trainer.email }}</span>
+                        </div>
+                    </mat-option>
+                </mat-select>
+            </mat-form-field>
+
+            <button mat-raised-button color="primary" class="add-btn"
+                    (click)="addTrainer()"
+                    [disabled]="group.trainers?.length >= (group.trainerCapacity || 2)">
+                <mat-icon>person_add</mat-icon> Add Trainer
+            </button>
+        </section>
+
+    </mat-card-content>
+
+    <mat-card-actions align="end">
+        <button mat-stroked-button color="accent" (click)="close()">
+            <mat-icon>close</mat-icon> Close
+        </button>
+    </mat-card-actions>
+</mat-card>

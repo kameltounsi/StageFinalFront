@@ -55,6 +55,12 @@
             <div class="group-list">
                 <div *ngFor="let group of groupedGroups[specialite]" class="group-item">
                     <span class="group-name">{{ group.nom }}</span>
+
+                    <!-- Bouton gérer les membres (fixé ici) -->
+                    <button mat-icon-button color="primary" (click)="openManageMembersDialog(group)">
+                        <mat-icon>group</mat-icon>
+                    </button>
+
                     <button mat-icon-button color="warn" (click)="deleteGroup(group.id)">
                         <mat-icon>delete</mat-icon>
                     </button>
