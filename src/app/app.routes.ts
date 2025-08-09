@@ -75,6 +75,11 @@ export const appRoutes: Route[] = [
                     import('app/modules/admin/dashboards/manage-users/manage-users.routes')
                         .then(m => m.routes)
             },
+            { path: 'admin/manage-plannings',
+    loadChildren: () =>
+    import('app/modules/admin/dashboards/manage-plannings/manage-plannings.routes')
+        .then(m => m.default)
+},
             {
                 path: 'add-user',
                 loadChildren: () =>

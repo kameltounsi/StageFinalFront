@@ -60,11 +60,14 @@ export class ManageMembersDialogComponent {
             });
     }
 
+    // ✅ Ajout d’un nettoyage du paramètre spécialité
     loadAvailableMembers(): void {
-        this.http.get<any[]>(`http://localhost:8089/api/groups/available-students?specialite=${this.group.specialite}`)
+        const specialiteCleaned = this.group.specialite?.trim().toLowerCase();
+
+        this.http.get<any[]>(`http://localhost:8089/api/groups/available-students?specialite=${encodeURIComponent(specialiteCleaned)}`)
             .subscribe(res => this.availableStudents = res);
 
-        this.http.get<any[]>(`http://localhost:8089/api/groups/available-trainers?specialite=${this.group.specialite}`)
+        this.http.get<any[]>(`http://localhost:8089/api/groups/available-trainers?specialite=${encodeURIComponent(specialiteCleaned)}`)
             .subscribe(res => this.availableTrainers = res);
     }
 

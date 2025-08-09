@@ -29,7 +29,7 @@ export const adminNavigation: Navigation = {
             title: 'Plannings',
             type: 'basic',
             icon: 'heroicons_outline:calendar',
-            link: '/admin/planning'
+            link: 'admin/manage-plannings'
         },
         {
             id: 'admin.attendance',

@@ -13,6 +13,7 @@
     "test": "ng test"
   },
   "dependencies": {
+    "@angular-material-components/datetime-picker": "^16.0.1",
     "@angular/animations": "^18.0.1",
     "@angular/cdk": "^18.0.1",
     "@angular/common": "18.0.1",
@@ -31,6 +32,8 @@
     "lodash-es": "4.17.21",
     "luxon": "3.4.4",
     "ng-apexcharts": "1.10.0",
+    "ngx-mat-timepicker": "^16.0.1",
+    "ngx-material-timepicker": "^13.1.1",
     "ngx-quill": "26.0.1",
     "perfect-scrollbar": "1.5.5",
     "quill": "2.0.2",

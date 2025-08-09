@@ -7,7 +7,7 @@ import {CommonModule, NgClass} from "@angular/common";
 import {MatFormField} from "@angular/material/form-field";
 import { MatInputModule } from '@angular/material/input';
 import {MatIcon} from "@angular/material/icon";
-import {MatIconButton} from "@angular/material/button";
+import {MatButton, MatIconButton} from "@angular/material/button";
 import { ChangeDetectorRef } from '@angular/core';
 
 @Component({
@@ -23,6 +23,7 @@ import { ChangeDetectorRef } from '@angular/core';
         MatInputModule,
         MatIcon,
         MatIconButton,
+        MatButton,
 
     ],
     standalone: true,
