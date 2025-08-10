@@ -1,7 +1,7 @@
-import {ApplicationConfig, APP_INITIALIZER, inject, importProvidersFrom} from '@angular/core';
+import { ApplicationConfig, APP_INITIALIZER, inject, importProvidersFrom } from '@angular/core';
 import { provideRouter, withPreloading, withInMemoryScrolling, PreloadAllModules } from '@angular/router';
 import { provideAnimations } from '@angular/platform-browser/animations';
-import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
+import { provideHttpClient, withInterceptors, withInterceptorsFromDi } from '@angular/common/http';
 import { provideNativeDateAdapter, MAT_DATE_LOCALE, MAT_DATE_FORMATS } from '@angular/material/core';
 
 import { provideFuse } from '@fuse';
@@ -13,20 +13,26 @@ import { provideAuth } from 'app/core/auth/auth.provider';
 import { provideIcons } from 'app/core/icons/icons.provider';
 import { mockApiServices } from 'app/mock-api';
 import { TranslocoHttpLoader } from './core/transloco/transloco.http-loader';
-import {NgxMatNativeDateModule} from "@angular-material-components/datetime-picker";
+import { NgxMatNativeDateModule } from '@angular-material-components/datetime-picker';
+import { errorAlertInterceptor } from './core/interceptors/error-alert.interceptor';
 
 export const appConfig: ApplicationConfig = {
     providers: [
+        // ✅ HttpClient + Interceptor global SweetAlert
+        provideHttpClient(
+            withInterceptors([errorAlertInterceptor]),
+            withInterceptorsFromDi() // si tu as d'autres interceptors DI (ex: JWT)
+        ),
+
         provideAnimations(),
-        provideHttpClient(withInterceptorsFromDi()),   // <-- si tu as des interceptors (JWT, etc.)
         provideRouter(
             appRoutes,
             withPreloading(PreloadAllModules),
             withInMemoryScrolling({ scrollPositionRestoration: 'enabled' })
         ),
-        importProvidersFrom(NgxMatNativeDateModule), // ✅ <-- REQUIRED adapter
+        importProvidersFrom(NgxMatNativeDateModule), // adapter natif
 
-        // ✅ Adapter natif + locale FR (plus simple que Luxon pour ton cas)
+        // ✅ Adapter natif + locale FR + formats
         provideNativeDateAdapter(),
         { provide: MAT_DATE_LOCALE, useValue: 'fr-FR' },
         {

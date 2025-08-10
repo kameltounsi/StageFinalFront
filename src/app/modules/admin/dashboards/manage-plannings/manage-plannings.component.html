@@ -49,14 +49,24 @@
             <ngx-material-timepicker #endPicker [format]="24"></ngx-material-timepicker>
         </mat-form-field>
 
+        <!-- Matière -->
         <mat-form-field appearance="outline" class="grow">
             <mat-label>Matière</mat-label>
-            <input matInput [(ngModel)]="matiere" placeholder="Ex : Java avancé" />
+            <mat-select [(ngModel)]="matiere" [disabled]="matieresPourSpecialite.length === 0">
+                <mat-option *ngFor="let m of matieresPourSpecialite" [value]="m">
+                    {{ m }}
+                </mat-option>
+            </mat-select>
         </mat-form-field>
 
+        <!-- Salle -->
         <mat-form-field appearance="outline" class="grow">
             <mat-label>Salle</mat-label>
-            <input matInput [(ngModel)]="salle" placeholder="Ex : B12" />
+            <mat-select [(ngModel)]="salle" [disabled]="sallesPourSpecialite.length === 0">
+                <mat-option *ngFor="let s of sallesPourSpecialite" [value]="s">
+                    {{ s }}
+                </mat-option>
+            </mat-select>
         </mat-form-field>
 
         <button
@@ -87,7 +97,9 @@
             <td>{{ e.salle }}</td>
             <td>{{ e.groupe?.specialite || e.groupe?.nom }}</td>
             <td>{{ e.formateur?.fullName }}</td>
-            <td><button mat-button color="warn" (click)="supprimerEmploi(e.id)">Supprimer</button></td>
+            <td>
+                <button mat-button color="warn" (click)="supprimerEmploi(e.id)">Supprimer</button>
+            </td>
         </tr>
     </table>
 
