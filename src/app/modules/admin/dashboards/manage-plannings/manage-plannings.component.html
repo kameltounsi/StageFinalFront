@@ -1,9 +1,9 @@
 <div class="planning-container">
-    <h2>📅 Gestion des plannings</h2>
+    <h2>📅 Schedule Management</h2>
 
     <div class="filters">
         <mat-form-field appearance="outline" class="w-50">
-            <mat-label>Choisir un groupe</mat-label>
+            <mat-label>Select a group</mat-label>
             <mat-select [(ngModel)]="selectedGroupeId" (selectionChange)="onGroupeChange()">
                 <mat-option *ngFor="let g of groupes" [value]="g.id">
                     {{ g.nom }} — {{ g.specialite }}
@@ -12,7 +12,7 @@
         </mat-form-field>
 
         <mat-form-field appearance="outline" class="w-50">
-            <mat-label>Choisir un formateur</mat-label>
+            <mat-label>Select a trainer</mat-label>
             <mat-select [(ngModel)]="selectedTrainerId" [disabled]="!selectedGroupeId">
                 <mat-option *ngFor="let t of trainers" [value]="t.id">{{ t.fullName }}</mat-option>
             </mat-select>
@@ -28,30 +28,27 @@
                     [matDatepicker]="picker"
                     [(ngModel)]="date"
                     [min]="today"
-                    placeholder="Choisir une date" />
+                    placeholder="Choose a date" />
             <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
             <mat-datepicker #picker startView="month" [startAt]="today"></mat-datepicker>
         </mat-form-field>
 
-        <!-- Start -->
+        <!-- Time slot (replaces the two timepickers) -->
         <mat-form-field appearance="outline">
-            <mat-label>Heure début</mat-label>
-            <input matInput [ngxTimepicker]="startPicker" readonly [(ngModel)]="heureDebut" (ngModelChange)="onStartTimeChange()" />
-            <ngx-material-timepicker-toggle matSuffix [for]="startPicker"></ngx-material-timepicker-toggle>
-            <ngx-material-timepicker #startPicker [format]="24"></ngx-material-timepicker>
+            <mat-label>Time slot</mat-label>
+            <mat-select
+                    [(ngModel)]="heureDebut"
+                    (selectionChange)="onSlotChange($event.value)"
+                    [disabled]="!selectedGroupeId || !date">
+                <mat-option *ngFor="let s of allowedSlots" [value]="s.start">
+                    {{ s.label }}
+                </mat-option>
+            </mat-select>
         </mat-form-field>
 
-        <!-- End -->
-        <mat-form-field appearance="outline">
-            <mat-label>Heure fin</mat-label>
-            <input matInput [ngxTimepicker]="endPicker" readonly [(ngModel)]="heureFin" />
-            <ngx-material-timepicker-toggle matSuffix [for]="endPicker"></ngx-material-timepicker-toggle>
-            <ngx-material-timepicker #endPicker [format]="24"></ngx-material-timepicker>
-        </mat-form-field>
-
-        <!-- Matière -->
+        <!-- Subject -->
         <mat-form-field appearance="outline" class="grow">
-            <mat-label>Matière</mat-label>
+            <mat-label>Subject</mat-label>
             <mat-select [(ngModel)]="matiere" [disabled]="matieresPourSpecialite.length === 0">
                 <mat-option *ngFor="let m of matieresPourSpecialite" [value]="m">
                     {{ m }}
@@ -59,9 +56,9 @@
             </mat-select>
         </mat-form-field>
 
-        <!-- Salle -->
+        <!-- Room -->
         <mat-form-field appearance="outline" class="grow">
-            <mat-label>Salle</mat-label>
+            <mat-label>Room</mat-label>
             <mat-select [(ngModel)]="salle" [disabled]="sallesPourSpecialite.length === 0">
                 <mat-option *ngFor="let s of sallesPourSpecialite" [value]="s">
                     {{ s }}
@@ -74,20 +71,29 @@
                 color="primary"
                 (click)="ajouterEmploi()"
                 [disabled]="!selectedGroupeId || !selectedTrainerId || !date || !heureDebut || !heureFin || !matiere || !salle">
-            Ajouter
+            Add
         </button>
     </div>
 
-    <h3 *ngIf="emplois.length > 0">📌 Emploi du temps</h3>
+    <button
+            mat-stroked-button
+            color="primary"
+            (click)="exporterPdf()
+    "
+            [disabled]="!selectedGroupeId">
+        Export PDF
+    </button>
+
+    <h3 *ngIf="emplois.length > 0">📌 Timetable</h3>
 
     <table *ngIf="emplois.length > 0" class="calendar">
         <tr>
             <th>Date</th>
-            <th>Heure</th>
-            <th>Matière</th>
-            <th>Salle</th>
-            <th>Groupe</th>
-            <th>Formateur</th>
+            <th>Time</th>
+            <th>Subject</th>
+            <th>Room</th>
+            <th>Group</th>
+            <th>Trainer</th>
             <th>Actions</th>
         </tr>
         <tr *ngFor="let e of emplois">
@@ -98,10 +104,10 @@
             <td>{{ e.groupe?.specialite || e.groupe?.nom }}</td>
             <td>{{ e.formateur?.fullName }}</td>
             <td>
-                <button mat-button color="warn" (click)="supprimerEmploi(e.id)">Supprimer</button>
+                <button mat-button color="warn" (click)="supprimerEmploi(e.id)">Delete</button>
             </td>
         </tr>
     </table>
 
-    <p *ngIf="emplois.length === 0">Aucun emploi du temps pour ce groupe.</p>
+    <p *ngIf="emplois.length === 0">No timetable for this group.</p>
 </div>

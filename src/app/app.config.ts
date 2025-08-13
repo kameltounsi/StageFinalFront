@@ -15,12 +15,13 @@ import { mockApiServices } from 'app/mock-api';
 import { TranslocoHttpLoader } from './core/transloco/transloco.http-loader';
 import { NgxMatNativeDateModule } from '@angular-material-components/datetime-picker';
 import { errorAlertInterceptor } from './core/interceptors/error-alert.interceptor';
+import {jwtInterceptor} from "./core/interceptors/jwt.interceptor";
 
 export const appConfig: ApplicationConfig = {
     providers: [
         // ✅ HttpClient + Interceptor global SweetAlert
         provideHttpClient(
-            withInterceptors([errorAlertInterceptor]),
+            withInterceptors([jwtInterceptor, errorAlertInterceptor]),
             withInterceptorsFromDi() // si tu as d'autres interceptors DI (ex: JWT)
         ),
 

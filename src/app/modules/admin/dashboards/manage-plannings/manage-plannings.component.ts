@@ -12,6 +12,7 @@ import { MatButtonModule }    from '@angular/material/button';
 import { MatIconModule }      from '@angular/material/icon';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule, MAT_DATE_LOCALE } from '@angular/material/core';
+import { HttpHeaders, HttpParams } from '@angular/common/http';
 
 import { NgxMaterialTimepickerModule } from 'ngx-material-timepicker';
 
@@ -161,6 +162,21 @@ export class ManagePlanningsComponent implements OnInit {
     loadGroupes(): void {
         this.http.get<Groupe[]>('/api/groups').subscribe(res => this.groupes = res);
     }
+    // --- Créneaux fixes ---
+    allowedSlots = [
+        { start: '08:00', end: '10:00', label: '08:00 – 10:00' },
+        { start: '10:00', end: '12:00', label: '10:00 – 12:00' },
+        { start: '13:00', end: '15:00', label: '13:00 – 15:00' },
+        { start: '15:00', end: '17:00', label: '15:00 – 17:00' },
+    ];
+
+    // Quand l'utilisateur choisit un créneau, on remplit début/fin
+    onSlotChange(start: string): void {
+        const s = this.allowedSlots.find(x => x.start === start);
+        if (!s) { this.heureDebut = ''; this.heureFin = ''; return; }
+        this.heureDebut = s.start;
+        this.heureFin   = s.end;
+    }
 
     onGroupeChange(): void {
         if (!this.selectedGroupeId) return;
@@ -181,6 +197,8 @@ export class ManagePlanningsComponent implements OnInit {
         // Réinitialiser si la valeur courante ne colle plus
         if (!this.matieresPourSpecialite.includes(this.matiere)) this.matiere = '';
         if (!this.sallesPourSpecialite.includes(this.salle))     this.salle   = '';
+        this.heureDebut = '';
+        this.heureFin   = '';
     }
 
     // ---------- Utils ----------
@@ -341,4 +359,125 @@ export class ManagePlanningsComponent implements OnInit {
                 });
             });
     }
+    private toYmd(d: Date): string {
+        const p = (n: number) => String(n).padStart(2, '0');
+        return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}`;
+    }
+
+    private weekRange(date: Date): { start: string; end: string } {
+        const d = new Date(date);
+        const day = d.getDay(); // 0=dim,1=lun,...
+        const diffToMonday = (day + 6) % 7; // 0 pour lundi
+        const monday = new Date(d);
+        monday.setDate(d.getDate() - diffToMonday);
+        const sunday = new Date(monday);
+        sunday.setDate(monday.getDate() + 6);
+        return { start: this.toYmd(monday), end: this.toYmd(sunday) };
+    }
+    exportPdfSemaine(): void {
+        if (!this.selectedGroupeId) return;
+
+        // semaine basée sur la date choisie ou aujourd’hui
+        const base = this.date ?? new Date();
+        const { start, end } = this.weekRange(base);
+
+        const params = new HttpParams().set('start', start).set('end', end);
+
+        // Ce header permet d’ignorer une éventuelle redirection auto sur 401/403
+        const headers = new HttpHeaders().set('X-Skip-Auth-Redirect', 'true');
+
+        this.http.get(`/api/plannings/${this.selectedGroupeId}/export-week`, {
+            params,
+            headers,
+            responseType: 'blob'
+        }).subscribe({
+            next: (blob) => {
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `planning_${this.selectedGroupeId}_${start}_${end}.pdf`;
+                document.body.appendChild(a);
+                a.click();
+                a.remove();
+                window.URL.revokeObjectURL(url);
+            },
+            error: (err) => {
+                // Ton interceptor d’erreurs affiche déjà un SweetAlert,
+                // mais au cas où tu veux forcer ici :
+                const { title, icon } = this.errorMeta(err);
+                const msg = this.extractErrorMessage(err);
+                Swal.fire({ icon, title, text: msg });
+            }
+        });
+    }
+    private iso(d: Date): string {
+        return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+    }
+/*
+    exporterPdf(): void {
+        if (!this.selectedGroupeId) return;
+        // Intervalle : semaine du jour sélectionné (ou d’aujourd’hui si rien)
+        const base = this.date ?? new Date();
+        const d = new Date(base.getFullYear(), base.getMonth(), base.getDate());
+        const weekday = d.getDay(); // 0=dimanche
+        const lundi = new Date(d);  // début semaine = lundi
+        lundi.setDate(d.getDate() - ((weekday + 6) % 7));
+        const dimanche = new Date(lundi);
+        dimanche.setDate(lundi.getDate() + 6);
+
+        const start = this.iso(lundi);
+        const end   = this.iso(dimanche);
+
+        this.emploisService.exportPdf(this.selectedGroupeId, start, end)
+            .subscribe(({blob, filename}) => {
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = filename || `planning_${start}_${end}.pdf`;
+                document.body.appendChild(a);
+                a.click();
+                a.remove();
+                URL.revokeObjectURL(url);
+            });
+    }
+*/
+    private fmt(dIso: string): string {
+        // 'YYYY-MM-DD' -> 'dd-MM-yyyy'
+        const [y,m,d] = dIso.split('-');
+        return `${d}-${m}-${y}`;
+    }
+
+    exporterPdf(): void {
+        if (!this.selectedGroupeId) return;
+
+        const base = this.date ?? new Date();
+        const d = new Date(base.getFullYear(), base.getMonth(), base.getDate());
+        const weekday = d.getDay(); // 0=dimanche
+        const lundi = new Date(d);
+        lundi.setDate(d.getDate() - ((weekday + 6) % 7));
+        const dimanche = new Date(lundi);
+        dimanche.setDate(lundi.getDate() + 6);
+
+        const start = this.iso(lundi); // YYYY-MM-DD
+        const end   = this.iso(dimanche);
+
+        const group = this.groupes.find(x => x.id === this.selectedGroupeId);
+        const fallback = `Planning ${group?.nom ?? this.selectedGroupeId} Semaine du ${this.fmt(start)} au ${this.fmt(end)}.pdf`
+            .replace(/[\\/:*?"<>|]+/g, ' ')
+            .replace(/\s+/g, ' ')
+            .trim();
+
+        this.emploisService.exportPdf(this.selectedGroupeId, start, end)
+            .subscribe(({blob, filename}) => {
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = filename || fallback;
+                document.body.appendChild(a);
+                a.click();
+                a.remove();
+                URL.revokeObjectURL(url);
+            });
+    }
+
 }
