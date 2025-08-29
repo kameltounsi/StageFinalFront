@@ -1,3 +1,4 @@
+// src/app/modules/trainer/manage-presence/manage-presence.service.ts
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { map, Observable } from 'rxjs';
@@ -17,7 +18,7 @@ export interface Student {
     fullName: string;
     email?: string;
 }
-// src/app/modules/trainer/manage-presence/manage-presence.service.ts
+
 export interface Me {
     id: number;
     fullName: string;
@@ -25,11 +26,25 @@ export interface Me {
     role: 'STUDENT' | 'TRAINER' | 'ADMIN';
 }
 
-
-
 export interface AttendanceMark {
     studentId: number;
-    present: boolean;
+    present: boolean; // mapping vers statut backend
+}
+
+/** Réponse backend du roster */
+interface RosterViewDTO {
+    emploiId: number;
+    date: string;
+    start: string;
+    end: string;
+    groupeId: number;
+    groupeNom: string;
+    matiere: string;
+    rows: Array<{
+        studentId: number;
+        fullName: string;
+        current: 'PRESENT' | 'ABSENT' | 'RETARD' | null;
+    }>;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -41,43 +56,55 @@ export class ManagePresenceService {
     me(): Observable<Me> {
         return this.http.get<Me>(`${this.base}/api/auth/me`);
     }
-    /** séances hebdo du formateur */
-    sessionsByTrainerAndWeek(trainerId: number, startISO: string, endISO: string): Observable<SessionItem[]> {
-        return this.http.get<any[]>(
-            `${this.base}/api/plannings/trainer/${trainerId}?startDate=${startISO}&endDate=${endISO}`
-        ).pipe(
-            map(list => (list || []).map(e => ({
-                id: e.id,
-                date: e.date,
-                heureDebut: e.heureDebut ?? e.heure,
-                heureFin: e.heureFin ?? '',
-                salle: e.salle,
-                matiere: e.matiere ?? e.groupe?.specialite ?? '',
-                groupe: e.groupe
-            } as SessionItem)))
-        );
+
+    /**
+     * Liste des séances pour la vue — on garde la signature (startISO/endISO)
+     * mais on appelle le nouvel endpoint "today-seances" du backend.
+     */
+    sessionsByTrainerAndWeek(_trainerId: number, _startISO: string, _endISO: string): Observable<SessionItem[]> {
+        return this.http
+            .get<any[]>(`${this.base}/api/trainers/me/attendance/today-seances`)
+            .pipe(
+                map(list => (list || []).map(e => ({
+                    id: e.id,
+                    date: e.date,
+                    heureDebut: e.start ?? e.heureDebut,
+                    heureFin: e.end ?? e.heureFin,
+                    salle: e.salle,
+                    matiere: e.matiere,
+                    groupe: { id: e.groupeId, nom: e.groupeNom, specialite: e.matiere }
+                } as SessionItem)))
+            );
     }
 
-    /** récupère les étudiants du groupe */
- /*   studentsByGroupe(groupeId: number): Observable<Student[]> {
-        // suppose GET /api/groups/{id} -> { id, nom, students: [...] }
-        return this.http.get<any>(`${this.base}/api/groups/${groupeId}`).pipe(
-            map(g => (g?.students || []).map((s: any) => ({
-                id: s.id, fullName: s.fullName, email: s.email
-            } as Student)))
-        );
-    }
-*/
-    /** charge présence d’une séance */
-    getAttendance(sessionId: number): Observable<AttendanceMark[]> {
-        return this.http.get<AttendanceMark[]>(`${this.base}/api/attendance/session/${sessionId}`);
+    /**
+     * Récupère le roster de la séance et renvoie:
+     *  - students: Student[]
+     *  - marks: AttendanceMark[] (present bool mappé depuis current)
+     */
+    getRoster(sessionId: number): Observable<{ students: Student[]; marks: AttendanceMark[] }> {
+        return this.http
+            .get<RosterViewDTO>(`${this.base}/api/trainers/me/attendance/sessions/${sessionId}/roster`)
+            .pipe(
+                map(r => {
+                    const students: Student[] = r.rows.map(row => ({
+                        id: row.studentId,
+                        fullName: row.fullName,
+                        email: undefined
+                    }));
+                    const marks: AttendanceMark[] = r.rows.map(row => ({
+                        studentId: row.studentId,
+                        present: row.current === 'PRESENT'
+                    }));
+                    return { students, marks };
+                })
+            );
     }
 
-    /** sauvegarde présence d’une séance (bulk) */
-    saveAttendance(sessionId: number, marks: AttendanceMark[]): Observable<void> {
-        return this.http.post<void>(`${this.base}/api/attendance/session/${sessionId}`, marks);
-    }
-    // private base = environment.apiBase;  // <-- utilise environment
+    /**
+     * Compat: si tu veux encore appeler les élèves du groupe par l’ancien endpoint.
+     * (Gardé en secours; non obligatoire avec getRoster().)
+     */
     studentsByGroupe(groupeId: number): Observable<Student[]> {
         return this.http.get<any>(`${this.base}/api/groups/${groupeId}`).pipe(
             map(g => (g?.students || []).map((s: any) => {
@@ -87,4 +114,22 @@ export class ManagePresenceService {
         );
     }
 
+    /** Compat: renvoie uniquement les marks depuis le roster. */
+    getAttendance(sessionId: number): Observable<AttendanceMark[]> {
+        return this.getRoster(sessionId).pipe(map(r => r.marks));
+    }
+
+    /**
+     * Sauvegarde en lot: convertit AttendanceMark -> PresenceMarkInput backend.
+     */
+    saveAttendance(sessionId: number, marks: AttendanceMark[]): Observable<void> {
+        const payload = marks.map(m => ({
+            studentId: m.studentId,
+            statut: m.present ? 'PRESENT' : 'ABSENT'
+        }));
+        return this.http.post<void>(
+            `${this.base}/api/trainers/me/attendance/sessions/${sessionId}/mark`,
+            payload
+        );
+    }
 }

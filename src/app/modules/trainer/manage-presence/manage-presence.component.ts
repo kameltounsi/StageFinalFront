@@ -16,8 +16,8 @@ import {
     Student
 } from './manage-presence.service';
 
-import { forkJoin, of } from 'rxjs';
-import { switchMap, catchError, tap } from 'rxjs/operators';
+import { of } from 'rxjs';
+import { catchError, tap } from 'rxjs/operators';
 
 @Component({
     selector: 'app-manage-presence',
@@ -36,7 +36,7 @@ export class ManagePresenceComponent implements OnInit {
     monday = signal<string>(this.getMondayISO(new Date()));
     sunday = computed(() => this.addDaysISO(this.monday(), 6));
 
-    // formateur courant
+    // formateur courant (non utilisé par le nouvel endpoint, gardé pour compat)
     trainerId?: number;
 
     // données
@@ -70,13 +70,14 @@ export class ManagePresenceComponent implements OnInit {
         this.students = [];
         this.marks.clear();
 
+        // Le service appelle le nouvel endpoint /today-seances
         this.api.sessionsByTrainerAndWeek(this.trainerId, this.monday(), this.sunday())
             .pipe(catchError(() => of<SessionItem[]>([])))
             .subscribe(list => {
                 this.sessions = list;
                 this.loading = false;
 
-                // UX: auto-sélection si une seule séance
+                // UX: auto-sélection s'il n'y a qu'une seule séance
                 if (this.sessions.length === 1) {
                     this.selectedSessionId = this.sessions[0].id;
                     this.onSelectSession();
@@ -86,30 +87,27 @@ export class ManagePresenceComponent implements OnInit {
 
     onSelectSession(): void {
         if (!this.selectedSessionId) return;
-        const session = this.sessions.find(s => s.id === this.selectedSessionId);
-        if (!session) return;
 
         this.loading = true;
         this.students = [];
         this.marks.clear();
 
-        this.api.studentsByGroupe(session.groupe.id).pipe(
-            switchMap(studs => {
-                this.students = studs ?? [];
-                // par défaut: absent
-                this.students.forEach(s => this.marks.set(s.id, false));
-                return forkJoin({
-                    existing: this.api.getAttendance(session.id).pipe(catchError(() => of<AttendanceMark[]>([])))
-                });
-            }),
-            tap(({ existing }) => {
-                existing.forEach(m => this.marks.set(m.studentId, !!m.present));
-            }),
-            catchError(() => of(null))
-        ).subscribe({
-            next: () => this.loading = false,
-            error: () => this.loading = false
-        });
+        // Récupère directement roster (students + marks) via le nouveau backend
+        this.api.getRoster(this.selectedSessionId)
+            .pipe(
+                tap(({ students, marks }) => {
+                    this.students = students ?? [];
+                    // init: absent par défaut
+                    this.students.forEach(s => this.marks.set(s.id, false));
+                    // applique l'état existant
+                    marks.forEach(m => this.marks.set(m.studentId, !!m.present));
+                }),
+                catchError(() => of(null))
+            )
+            .subscribe({
+                next: () => this.loading = false,
+                error: () => this.loading = false
+            });
     }
 
     // ---- Actions
@@ -151,7 +149,6 @@ export class ManagePresenceComponent implements OnInit {
         );
     }
 
-    // label robuste (évite les "•" orphelins)
     sessionLabel(s: SessionItem): string {
         const time = [s.heureDebut, s.heureFin].filter(Boolean).join('–') || '--:--';
         const mat = s.matiere || s.groupe?.specialite || '';
@@ -163,7 +160,7 @@ export class ManagePresenceComponent implements OnInit {
     trackBySession = (_: number, s: SessionItem) => s.id;
     trackByStudent = (_: number, s: Student) => s.id;
 
-    // ---- Dates (corrigées: pas de toISOString() -> évite le décalage UTC)
+    // ---- Dates (locales, pas d'UTC shift)
     private fmtLocalYYYYMMDD(d: Date): string {
         const y = d.getFullYear();
         const m = String(d.getMonth() + 1).padStart(2, '0');
@@ -178,7 +175,7 @@ export class ManagePresenceComponent implements OnInit {
     }
 
     addDaysISO(iso: string, days: number): string {
-        const d = new Date(iso + 'T00:00:00'); // force locale
+        const d = new Date(iso + 'T00:00:00');
         d.setDate(d.getDate() + days);
         return this.fmtLocalYYYYMMDD(d);
     }

@@ -1,23 +1,23 @@
-<mat-card class="mp-card">
+<mat-card class="mp-card mp-centered">  <!-- mp-centered = contenu centré -->
+
+    <!-- Header: navigation semaine -->
     <div class="mp-header">
-        <button mat-stroked-button (click)="prevWeek()">
+        <button mat-stroked-button class="mp-ghost" (click)="prevWeek()">
             <mat-icon>chevron_left</mat-icon>
             Précédente
         </button>
 
-        <div class="mp-range">
-            Semaine du
-            <strong>{{ monday() }}</strong>
-            au
-            <strong>{{ sunday() }}</strong>
+        <div class="mp-range mp-week-pill">
+            Semaine du <strong>{{ monday() }}</strong> au <strong>{{ sunday() }}</strong>
         </div>
 
-        <button mat-stroked-button (click)="nextWeek()">
+        <button mat-stroked-button class="mp-ghost" (click)="nextWeek()">
             Suivante
             <mat-icon>chevron_right</mat-icon>
         </button>
     </div>
 
+    <!-- Sélecteur + actions -->
     <div class="mp-row">
         <mat-form-field appearance="outline" class="mp-select">
             <mat-label>Séance</mat-label>
@@ -29,17 +29,18 @@
         </mat-form-field>
 
         <div class="mp-actions" *ngIf="students.length">
-            <button mat-button (click)="setAll(true)">
+            <button mat-button class="mp-link" (click)="setAll(true)">
                 <mat-icon>check_circle</mat-icon>
                 Tous présents
             </button>
-            <button mat-button (click)="setAll(false)">
+            <button mat-button class="mp-link danger" (click)="setAll(false)">
                 <mat-icon>cancel</mat-icon>
                 Tous absents
             </button>
         </div>
     </div>
 
+    <!-- Toolbar -->
     <div class="mp-toolbar" *ngIf="students.length">
         <mat-form-field appearance="outline" class="mp-search">
             <mat-label>Rechercher un étudiant</mat-label>
@@ -49,6 +50,7 @@
         <button
                 mat-flat-button
                 color="primary"
+                class="mp-save"
                 (click)="save()"
                 [disabled]="saving || !selectedSessionId || !students.length">
             <mat-icon>save</mat-icon>
@@ -56,6 +58,7 @@
         </button>
     </div>
 
+    <!-- Tableau -->
     <div class="mp-table" *ngIf="students.length">
         <div class="mp-head">
             <div>Étudiant</div>
@@ -67,14 +70,13 @@
             <div>{{ s.fullName }}</div>
             <div class="muted">{{ s.email || '—' }}</div>
             <div class="center">
-                <mat-slide-toggle
-                        [checked]="(marks.get(s.id) ?? false)"
-                        (change)="toggle(s.id, $event.checked)">
+                <mat-slide-toggle color="primary"
+                                  [checked]="(marks.get(s.id) ?? false)"
+                                  (change)="toggle(s.id, $event.checked)">
                 </mat-slide-toggle>
             </div>
         </div>
 
-        <!-- Optionnel: message quand le filtre ne retourne rien -->
         <div class="mp-empty" *ngIf="filteredStudents().length === 0">
             Aucun résultat pour « {{ filter }} ».
         </div>
