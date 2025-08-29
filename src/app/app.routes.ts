@@ -180,7 +180,27 @@ export const appRoutes: Route[] = [
                     { path: 'guides', loadChildren: () => import('app/modules/admin/docs/guides/guides.routes') }
                 ]
             },
+            // ✅ Route trainer : Weekly Schedule
+            {
+                path: 'trainer/weekly-schedule',
+                loadChildren: () =>
+                    import('app/modules/trainer/weekly-schedule/weekly-schedule.routes')
+                        .then(m => m.default)
+            },
 
+            {
+                path: 'trainer/manage-presence',
+                canActivate: [AuthGuard],
+                // canMatch: [AuthGuard],   // si lazy module
+                loadComponent: () => import('app/modules/trainer/manage-presence/manage-presence.component').then(m => m.ManagePresenceComponent)
+            },
+            // app/app.routes.ts (ou routes équivalentes)
+            {
+                path: 'student/consult-planning',
+                loadChildren: () =>
+                    import('app/modules/student/consult-planning/consult-planning.routes')
+                        .then(m => m.consultPlanningRoutes)
+            },
             // Catch-all
             { path: '404-not-found', pathMatch: 'full', loadChildren: () => import('app/modules/admin/pages/error/error-404/error-404.routes') },
             { path: '**', redirectTo: '404-not-found' }

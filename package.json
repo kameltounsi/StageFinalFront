@@ -28,6 +28,7 @@
     "@ngneat/transloco": "6.0.4",
     "apexcharts": "3.49.1",
     "crypto-js": "4.2.0",
+    "date-fns": "^4.1.0",
     "highlight.js": "11.9.0",
     "lodash-es": "4.17.21",
     "luxon": "3.4.4",

@@ -29,18 +29,18 @@ export class AuthService {
     // -----------------------------------------------------------------------------------------------------
     // @ Public methods
     // -----------------------------------------------------------------------------------------------------
-/*
+    /*
 
-     * Forgot password
-     *
-     * @param email
+         * Forgot password
+         *
+         * @param email
 
-    forgotPassword(email: string): Observable<string> {
-        return this._httpClient.post('http://localhost:8089/api/auth/forgot-password', null, {
-            params: { email },
-            responseType: 'text'
-        });
-    }*/
+        forgotPassword(email: string): Observable<string> {
+            return this._httpClient.post('http://localhost:8089/api/auth/forgot-password', null, {
+                params: { email },
+                responseType: 'text'
+            });
+        }*/
     forgotPassword(email: string): Observable<string> {
         return this._httpClient.post(
             'http://localhost:8089/api/auth/forgot-password',
@@ -75,25 +75,25 @@ export class AuthService {
      *
      * @param credentials
      */
- /*   signIn(credentials: { email: string; password: string }): Observable<any> {
-        return this._httpClient.post('api/auth/login', credentials).pipe(
-            switchMap((response: any) => {
-                this.accessToken = response.accessToken;
-                this._authenticated = true;
-                this._userService.user = response.user;
-                return of(response);
+    /*   signIn(credentials: { email: string; password: string }): Observable<any> {
+           return this._httpClient.post('api/auth/login', credentials).pipe(
+               switchMap((response: any) => {
+                   this.accessToken = response.accessToken;
+                   this._authenticated = true;
+                   this._userService.user = response.user;
+                   return of(response);
+               })
+           );
+       }
+   */
+    signIn(credentials: { email: string; password: string }): Observable<AuthResponse> {
+        return this._httpClient.post<AuthResponse>('http://localhost:8089/api/auth/login', credentials).pipe(
+            tap((response) => {
+                localStorage.setItem('token', response.token);
+                localStorage.setItem('user', JSON.stringify(response.user));
             })
         );
     }
-*/
-signIn(credentials: { email: string; password: string }): Observable<AuthResponse> {
-    return this._httpClient.post<AuthResponse>('http://localhost:8089/api/auth/login', credentials).pipe(
-        tap((response) => {
-            localStorage.setItem('token', response.token);
-            localStorage.setItem('user', JSON.stringify(response.user));
-        })
-    );
-}
 
 
 

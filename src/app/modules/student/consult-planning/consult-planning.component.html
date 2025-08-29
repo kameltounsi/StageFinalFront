@@ -1,0 +1,70 @@
+<!-- app/modules/student/consult-planning/consult-planning.component.html -->
+<div class="ws-wrap">
+    <div class="ws-toolbar">
+        <button mat-stroked-button (click)="prevWeek()">
+            <mat-icon>chevron_left</mat-icon> Previous
+        </button>
+
+        <div class="ws-title">{{ weekLabel() }}</div>
+
+        <button mat-stroked-button (click)="nextWeek()">
+            Next <mat-icon>chevron_right</mat-icon>
+        </button>
+
+        <mat-form-field appearance="outline" class="ws-date">
+            <mat-label>Go to date</mat-label>
+            <input matInput [matDatepicker]="picker" (dateChange)="onDatePicked($event.value)" />
+            <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+            <mat-datepicker #picker startView="month"></mat-datepicker>
+        </mat-form-field>
+
+        <button
+                mat-flat-button
+                color="primary"
+                (click)="downloadPdf()"
+                [disabled]="downloading()"
+                style="margin-left: 8px"
+        >
+            <mat-icon>picture_as_pdf</mat-icon>
+            {{ downloading() ? 'Exporting…' : 'Export PDF' }}
+        </button>
+    </div>
+
+    <div *ngIf="loading()" class="ws-info">Loading schedule…</div>
+    <div *ngIf="!loading() && error()" class="ws-error">{{ error() }}</div>
+
+    <div *ngIf="!loading() && !error()" class="ws-table-wrap">
+        <table class="ws-table">
+            <thead>
+            <tr>
+                <th class="slot-col">Time</th>
+                <th *ngFor="let d of days()">{{ dayHeader(d) }}</th>
+            </tr>
+            </thead>
+
+            <tbody>
+            <tr *ngFor="let s of [].constructor(slotCount()); let si = index">
+                <th class="slot-col">{{ slotLabel(si) }}</th>
+                <td *ngFor="let d of days(); let di = index">
+                    <ng-container *ngIf="cellItems(di, si).length; else emptyCell">
+                        <div class="ws-session" *ngFor="let e of cellItems(di, si)">
+                            <div class="ws-subject">{{ e.matiere }}</div>
+                            <div class="ws-meta">
+                                <span class="badge">Trainer: {{ trainerName(e) }}</span>
+                                <span class="badge">Room: {{ e.salle || '—' }}</span>
+                            </div>
+                            <div class="ws-time">{{ e.heureDebut }} – {{ e.heureFin }}</div>
+                        </div>
+                    </ng-container>
+                    <ng-template #emptyCell><div class="ws-empty">—</div></ng-template>
+                </td>
+            </tr>
+
+            <tr class="ws-break">
+                <th class="slot-col">12:00 – 13:00</th>
+                <td *ngFor="let d of days()">Break</td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</div>

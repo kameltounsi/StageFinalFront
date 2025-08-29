@@ -16,13 +16,13 @@ export const studentNavigation: Navigation = {
             icon: 'heroicons_outline:book-open',
             link: '/student/my-courses'
         },
-        /*{
-            id: 'my-grades',
-            title: 'My Grades',
+        {
+            id: 'my-schedule',
+            title: 'My Schedule',
             type: 'basic',
-            icon: 'heroicons_outline:clipboard-check',
-            link: '/student/grades'
-        },*/
+            icon: 'heroicons_outline:calendar-days',
+            link: '/student/consult-planning'
+        },
         {
             id: 'my-grades',
             title: 'My Grades',
