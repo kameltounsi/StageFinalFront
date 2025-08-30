@@ -1,0 +1,85 @@
+<mat-card class="sa-card sa-centered">
+
+    <!-- Title & filters -->
+    <div class="sa-toolbar">
+        <div class="sa-title">
+            <mat-icon>event_busy</mat-icon>
+            My Absences
+        </div>
+
+        <div class="sa-filters">
+            <label>From
+                <input type="date" [(ngModel)]="from">
+            </label>
+            <label>To
+                <input type="date" [(ngModel)]="to">
+            </label>
+            <button mat-flat-button color="primary" (click)="search()">
+                <mat-icon>search</mat-icon>&nbsp;Search
+            </button>
+        </div>
+    </div>
+
+    <!-- Stats + quick search -->
+    <div class="sa-stats">
+        <div class="pill neutral">
+            <mat-icon>info</mat-icon>
+            Total: {{ stats.total }}
+        </div>
+        <div class="pill ok">
+            <mat-icon>check_circle</mat-icon>
+            Justified: {{ stats.justified }}
+        </div>
+        <div class="pill ko">
+            <mat-icon>cancel</mat-icon>
+            Unjustified: {{ stats.unjustified }}
+        </div>
+
+        <mat-form-field appearance="outline" class="sa-search">
+            <mat-label>Search</mat-label>
+            <input matInput [(ngModel)]="q" placeholder="Course, group, room…">
+        </mat-form-field>
+    </div>
+
+    <!-- Table -->
+    <div class="sa-table" *ngIf="filtered().length; else empty">
+        <div class="sa-head">
+            <div>Date</div>
+            <div>Time</div>
+            <div>Course</div>
+            <div>Group</div>
+            <div>Room</div>
+            <div class="center">Justified</div>
+            <div>Reason</div>
+        </div>
+
+        <div class="sa-row" *ngFor="let a of filtered(); trackBy: trackById">
+            <div>{{ a.date }}</div>
+            <div>{{ a.start }} – {{ a.end }}</div>
+            <div>{{ a.course }}</div>
+            <div>{{ a.group }}</div>
+            <div>{{ a.room || '—' }}</div>
+
+            <div class="center">
+        <span class="badge"
+              [class.badge-yes]="a.justified === true"
+              [class.badge-no]="a.justified === false"
+              [class.badge-null]="a.justified == null">
+          {{ a.justified === true ? 'Yes' : (a.justified === false ? 'No' : '—') }}
+        </span>
+            </div>
+
+            <div class="reason">
+                {{ a.reason?.trim() || '—' }}
+            </div>
+        </div>
+    </div>
+
+    <ng-template #empty>
+        <div class="sa-empty">
+            <mat-icon>hourglass_empty</mat-icon>
+            {{ loading ? 'Loading...' : 'No absences found for the selected range.' }}
+        </div>
+    </ng-template>
+
+</mat-card>

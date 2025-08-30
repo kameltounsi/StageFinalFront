@@ -3,6 +3,7 @@ import { initialDataResolver } from 'app/app.resolvers';
 import { AuthGuard } from 'app/core/auth/guards/auth.guard';
 import { NoAuthGuard } from 'app/core/auth/guards/noAuth.guard';
 import { LayoutComponent } from 'app/layout/layout.component';
+import {studentAbsenceRoutes} from "./modules/student/attendance/student-absence.routes";
 
 export const appRoutes: Route[] = [
     { path: '', pathMatch: 'full', redirectTo: 'dashboards/project' },
@@ -196,10 +197,15 @@ export const appRoutes: Route[] = [
             },
             // app/app.routes.ts (ou routes équivalentes)
             {
-                path: 'student/consult-planning',
+                path: 'student/absences',
                 loadChildren: () =>
-                    import('app/modules/student/consult-planning/consult-planning.routes')
-                        .then(m => m.consultPlanningRoutes)
+                    import('app/modules/student/attendance/student-absence.routes')
+                        .then(m => m.studentAbsenceRoutes)
+            },
+
+            {
+                path: 'student/absences',
+                children: studentAbsenceRoutes
             },
             // Catch-all
             { path: '404-not-found', pathMatch: 'full', loadChildren: () => import('app/modules/admin/pages/error/error-404/error-404.routes') },

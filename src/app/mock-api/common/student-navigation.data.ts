@@ -35,8 +35,9 @@ export const studentNavigation: Navigation = {
             title: 'My Attendance',
             type: 'basic',
             icon: 'heroicons_outline:check-circle',
-            link: '/student/attendance'
+            link: '/student/absences'
         }
+
     ],
     compact: [],
     futuristic: [],
