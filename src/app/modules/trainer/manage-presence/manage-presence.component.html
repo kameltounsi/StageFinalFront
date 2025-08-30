@@ -1,27 +1,46 @@
-<mat-card class="mp-card mp-centered">  <!-- mp-centered = contenu centré -->
+<mat-card class="mp-card mp-centered">
 
-    <!-- Header: navigation semaine -->
-    <div class="mp-header">
-        <button mat-stroked-button class="mp-ghost" (click)="prevWeek()">
-            <mat-icon>chevron_left</mat-icon>
-            Précédente
+    <!-- Mode switch -->
+    <div class="mp-mode">
+        <button mat-stroked-button [color]="mode()==='today' ? 'primary' : undefined" (click)="setMode('today')">
+            <mat-icon>today</mat-icon>&nbsp;Today
         </button>
-
-        <div class="mp-range mp-week-pill">
-            Semaine du <strong>{{ monday() }}</strong> au <strong>{{ sunday() }}</strong>
-        </div>
-
-        <button mat-stroked-button class="mp-ghost" (click)="nextWeek()">
-            Suivante
-            <mat-icon>chevron_right</mat-icon>
+        <button mat-stroked-button [color]="mode()==='history' ? 'primary' : undefined" (click)="setMode('history')">
+            <mat-icon>history</mat-icon>&nbsp;History
         </button>
     </div>
 
-    <!-- Sélecteur + actions -->
+    <!-- History filters -->
+    <div class="mp-row" *ngIf="mode()==='history'">
+        <div class="mp-date-range">
+            <label>
+                From
+                <input type="date" [(ngModel)]="historyStart">
+            </label>
+            <label>
+                To
+                <input type="date" [(ngModel)]="historyEnd">
+            </label>
+            <button mat-flat-button color="primary" (click)="load()">
+                <mat-icon>search</mat-icon>&nbsp;Search
+            </button>
+        </div>
+    </div>
+
+    <!-- Class then Session -->
     <div class="mp-row">
         <mat-form-field appearance="outline" class="mp-select">
-            <mat-label>Séance</mat-label>
-            <mat-select [(ngModel)]="selectedSessionId" (selectionChange)="onSelectSession()">
+            <mat-label>Class</mat-label>
+            <mat-select [(ngModel)]="selectedGroupId" (selectionChange)="onGroupChange()">
+                <mat-option *ngFor="let g of groups" [value]="g.id">
+                    {{ g.name }}
+                </mat-option>
+            </mat-select>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="mp-select">
+            <mat-label>Session</mat-label>
+            <mat-select [(ngModel)]="selectedSessionId" (selectionChange)="onSelectSession()" [disabled]="!sessions.length">
                 <mat-option *ngFor="let s of sessions; trackBy: trackBySession" [value]="s.id">
                     {{ sessionLabel(s) }}
                 </mat-option>
@@ -31,11 +50,11 @@
         <div class="mp-actions" *ngIf="students.length">
             <button mat-button class="mp-link" (click)="setAll(true)">
                 <mat-icon>check_circle</mat-icon>
-                Tous présents
+                Mark all present
             </button>
             <button mat-button class="mp-link danger" (click)="setAll(false)">
                 <mat-icon>cancel</mat-icon>
-                Tous absents
+                Mark all absent
             </button>
         </div>
     </div>
@@ -43,27 +62,24 @@
     <!-- Toolbar -->
     <div class="mp-toolbar" *ngIf="students.length">
         <mat-form-field appearance="outline" class="mp-search">
-            <mat-label>Rechercher un étudiant</mat-label>
-            <input matInput [(ngModel)]="filter" placeholder="Nom ou email" />
+            <mat-label>Search student</mat-label>
+            <input matInput [(ngModel)]="filter" placeholder="Name or email" />
         </mat-form-field>
 
-        <button
-                mat-flat-button
-                color="primary"
-                class="mp-save"
+        <button mat-flat-button color="primary" class="mp-save"
                 (click)="save()"
                 [disabled]="saving || !selectedSessionId || !students.length">
             <mat-icon>save</mat-icon>
-            {{ saving ? 'Enregistrement...' : 'Enregistrer' }}
+            {{ saving ? 'Saving...' : 'Save' }}
         </button>
     </div>
 
-    <!-- Tableau -->
+    <!-- Students table -->
     <div class="mp-table" *ngIf="students.length">
         <div class="mp-head">
-            <div>Étudiant</div>
+            <div>Student</div>
             <div>Email</div>
-            <div class="text-center">Présent</div>
+            <div class="text-center">Present</div>
         </div>
 
         <div class="mp-rowline" *ngFor="let s of filteredStudents(); trackBy: trackByStudent">
@@ -78,16 +94,16 @@
         </div>
 
         <div class="mp-empty" *ngIf="filteredStudents().length === 0">
-            Aucun résultat pour « {{ filter }} ».
+            No results for « {{ filter }} ».
         </div>
     </div>
 
     <div class="mp-empty" *ngIf="!loading && !sessions.length">
-        Aucune séance pour cette semaine.
+        No session found for the selected class.
     </div>
 
     <div class="mp-loading" *ngIf="loading">
         <mat-icon>hourglass_empty</mat-icon>
-        Chargement...
+        Loading...
     </div>
 </mat-card>
