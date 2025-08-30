@@ -64,7 +64,7 @@
     box-shadow:var(--mp-shadow-sm);
 }
 
-/* ---------- Header (si utilisé) ---------- */
+/* ---------- (Optionnel) Header weekly ---------- */
 .mp-header{
     display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:14px;
 }
@@ -77,8 +77,6 @@
     border:1px solid var(--mp-border);
     box-shadow:0 10px 28px -18px rgba(99,102,241,.35);
 }
-
-/* Ghost nav buttons (si affichés) */
 .mp-ghost[mat-stroked-button]{
     border-radius:999px !important;
     border-color:rgba(2,132,199,.22) !important;
@@ -138,8 +136,6 @@
 /* =========================================================
    SAVE BUTTON – visibilité forcée (plus de spécificité)
    ========================================================= */
-
-/* Base visible: texte blanc + gradient (bat Material) */
 :host ::ng-deep .mp-save.mat-mdc-button-base.mat-mdc-button {
     color:#fff !important;
     border-radius:var(--mp-radius-lg) !important;
@@ -151,16 +147,12 @@
     0 10px 22px -12px rgba(14,165,233,.35) !important;
     transition:transform var(--mp-transition), filter var(--mp-transition), box-shadow var(--mp-transition);
 }
-
-/* Hover */
 :host ::ng-deep .mp-save.mat-mdc-button-base.mat-mdc-button:hover {
     transform:translateY(-1px);
     filter:brightness(1.03);
     box-shadow:0 22px 40px -18px rgba(99,102,241,.52),
     0 14px 28px -14px rgba(14,165,233,.42) !important;
 }
-
-/* Disabled (vraiment lisible) */
 :host ::ng-deep .mp-save.mat-mdc-button-base.mat-mdc-button.mat-mdc-button-disabled {
     color:#fff !important;
     background:linear-gradient(135deg, #a5b4fc, #93c5fd) !important; /* indigo-300 -> sky-300 */
@@ -188,12 +180,15 @@
     padding:12px 14px; border-bottom:1px solid var(--mp-border);
 }
 
-/* Grid columns */
-.mp-head, .mp-rowline{
-    display:grid; grid-template-columns:2fr 2fr 140px; align-items:center;
+/* ===== NEW: 5 columns layout (Student | Email | Present | Justified | Reason) ===== */
+.mp-cols-5{
+    display:grid;
+    grid-template-columns: 2fr 2fr 120px 120px 2.2fr; /* ajuste si besoin */
+    align-items:center;
+    gap:0; /* propre, pas de trous */
 }
 
-/* Zebra + hover */
+/* lignes */
 .mp-rowline{
     padding:12px 14px; border-bottom:1px solid #eef2f7;
     transition:background-color var(--mp-transition), transform var(--mp-transition);
@@ -205,6 +200,27 @@
 .center, .text-center{ text-align:center; }
 .muted{ color:var(--mp-muted); }
 .muted small{ color:var(--mp-deemph); }
+
+/* ---------- Reason input styling ---------- */
+.reason-input{
+    width:100%;
+    height:38px;
+    padding:0 12px;
+    border:1px solid var(--mp-border);
+    border-radius:10px;
+    background:#fff;
+    color:#0f172a;
+    transition:box-shadow var(--mp-transition), border-color var(--mp-transition);
+}
+.reason-input:focus{
+    outline:none;
+    border-color:var(--mp-primary);
+    box-shadow:var(--mp-ring);
+}
+.reason-input:disabled{
+    background:#f8fafc;
+    color:var(--mp-deemph);
+}
 
 /* ---------- Slide toggle – subtle premium look ---------- */
 :host ::ng-deep .mat-mdc-slide-toggle .mdc-switch{ transform:scale(1.02); }
@@ -222,8 +238,14 @@
 /* ---------- Responsive ---------- */
 @media (max-width:980px){
     .mp-select{ min-width:280px; flex:1 1 280px; }
+    .mp-cols-5{
+        grid-template-columns: 1.6fr 1.8fr 110px 110px 2fr;
+    }
 }
 @media (max-width:720px){
-    .mp-head, .mp-rowline{ grid-template-columns:1.5fr 1.4fr 110px; }
     .mp-centered{ padding:16px; }
+    /* On compacte un peu les colonnes toggles sur mobile */
+    .mp-cols-5{
+        grid-template-columns: 1.4fr 1.6fr 96px 96px 1.8fr;
+    }
 }

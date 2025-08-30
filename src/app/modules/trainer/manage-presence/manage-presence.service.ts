@@ -28,6 +28,8 @@ export interface Me {
 export interface AttendanceMark {
     studentId: number;
     present: boolean;
+    justified?: boolean;          // NEW
+    justificationNote?: string;   // NEW
 }
 
 interface RosterViewDTO {
@@ -41,7 +43,10 @@ interface RosterViewDTO {
     rows: Array<{
         studentId: number;
         fullName: string;
+        email?: string;
         current: 'PRESENT' | 'ABSENT' | 'RETARD' | null;
+        justified?: boolean;            // NEW (backend RosterRowDTO)
+        justificationNote?: string;     // NEW (backend RosterRowDTO)
     }>;
 }
 
@@ -101,13 +106,24 @@ export class ManagePresenceService {
             .pipe(map(this.rosterToUi));
     }
 
+    /** Envoi PRESENT/ABSENT + justification quand ABSENT */
     saveAttendance(sessionId: number, marks: AttendanceMark[]): Observable<void> {
-        const payload = marks.map(m => ({ studentId: m.studentId, statut: m.present ? 'PRESENT' : 'ABSENT' }));
+        const payload = marks.map(m => ({
+            studentId: m.studentId,
+            statut: m.present ? 'PRESENT' : 'ABSENT',
+            justified: !m.present ? !!m.justified : false,
+            justificationNote: !m.present ? (m.justificationNote || null) : null
+        }));
         return this.http.post<void>(`${this.base}/api/trainers/me/attendance/sessions/${sessionId}/mark`, payload);
     }
 
     saveHistoryAttendance(sessionId: number, marks: AttendanceMark[]): Observable<void> {
-        const payload = marks.map(m => ({ studentId: m.studentId, statut: m.present ? 'PRESENT' : 'ABSENT' }));
+        const payload = marks.map(m => ({
+            studentId: m.studentId,
+            statut: m.present ? 'PRESENT' : 'ABSENT',
+            justified: !m.present ? !!m.justified : false,
+            justificationNote: !m.present ? (m.justificationNote || null) : null
+        }));
         return this.http.post<void>(`${this.base}/api/trainers/me/attendance/history-sessions/${sessionId}/mark`, payload);
     }
 
@@ -116,11 +132,13 @@ export class ManagePresenceService {
         const students: Student[] = r.rows.map(row => ({
             id: row.studentId,
             fullName: row.fullName,
-            email: undefined
+            email: row.email
         }));
         const marks: AttendanceMark[] = r.rows.map(row => ({
             studentId: row.studentId,
-            present: row.current === 'PRESENT'
+            present: row.current === 'PRESENT',
+            justified: row.justified,
+            justificationNote: row.justificationNote
         }));
         return { students, marks };
     };

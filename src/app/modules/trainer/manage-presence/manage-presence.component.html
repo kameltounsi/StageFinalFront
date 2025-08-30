@@ -2,10 +2,12 @@
 
     <!-- Mode switch -->
     <div class="mp-mode">
-        <button mat-stroked-button [color]="mode()==='today' ? 'primary' : undefined" (click)="setMode('today')">
+        <button mat-stroked-button [color]="mode()==='today' ? 'primary' : undefined"
+                (click)="setMode('today')">
             <mat-icon>today</mat-icon>&nbsp;Today
         </button>
-        <button mat-stroked-button [color]="mode()==='history' ? 'primary' : undefined" (click)="setMode('history')">
+        <button mat-stroked-button [color]="mode()==='history' ? 'primary' : undefined"
+                (click)="setMode('history')">
             <mat-icon>history</mat-icon>&nbsp;History
         </button>
     </div>
@@ -40,7 +42,9 @@
 
         <mat-form-field appearance="outline" class="mp-select">
             <mat-label>Session</mat-label>
-            <mat-select [(ngModel)]="selectedSessionId" (selectionChange)="onSelectSession()" [disabled]="!sessions.length">
+            <mat-select [(ngModel)]="selectedSessionId"
+                        (selectionChange)="onSelectSession()"
+                        [disabled]="!sessions.length">
                 <mat-option *ngFor="let s of sessions; trackBy: trackBySession" [value]="s.id">
                     {{ sessionLabel(s) }}
                 </mat-option>
@@ -76,20 +80,49 @@
 
     <!-- Students table -->
     <div class="mp-table" *ngIf="students.length">
-        <div class="mp-head">
+        <!-- header -->
+        <div class="mp-head mp-cols-5">
             <div>Student</div>
             <div>Email</div>
             <div class="text-center">Present</div>
+            <div class="text-center">Justified</div>
+            <div>Reason</div>
         </div>
 
-        <div class="mp-rowline" *ngFor="let s of filteredStudents(); trackBy: trackByStudent">
+        <!-- rows -->
+        <div class="mp-rowline mp-cols-5"
+             *ngFor="let s of filteredStudents(); trackBy: trackByStudent">
+            <!-- Student -->
             <div>{{ s.fullName }}</div>
+
+            <!-- Email -->
             <div class="muted">{{ s.email || '—' }}</div>
+
+            <!-- Present -->
             <div class="center">
                 <mat-slide-toggle color="primary"
-                                  [checked]="(marks.get(s.id) ?? false)"
-                                  (change)="toggle(s.id, $event.checked)">
+                                  [checked]="(marksPresent.get(s.id) ?? false)"
+                                  (change)="togglePresent(s.id, $event.checked)">
                 </mat-slide-toggle>
+            </div>
+
+            <!-- Justified -->
+            <div class="center">
+                <mat-slide-toggle color="primary"
+                                  [disabled]="marksPresent.get(s.id)"
+                                  [checked]="(marksJustified.get(s.id) ?? false)"
+                                  (change)="toggleJustified(s.id, $event.checked)">
+                </mat-slide-toggle>
+            </div>
+
+            <!-- Reason -->
+            <div>
+                <input matInput
+                       class="reason-input"
+                       placeholder="Reason (optional)"
+                       [disabled]="marksPresent.get(s.id)"
+                       [ngModel]="marksNote.get(s.id) || ''"
+                       (ngModelChange)="onNoteChange(s.id, $event)" />
             </div>
         </div>
 

@@ -18,7 +18,7 @@ import {
 
 import { of } from 'rxjs';
 import { catchError, tap } from 'rxjs/operators';
-import Swal from 'sweetalert2'; // ✅ SweetAlert2
+import Swal from 'sweetalert2';
 
 type Mode = 'today' | 'history';
 
@@ -40,24 +40,18 @@ interface GroupOption {
 })
 export class ManagePresenceComponent implements OnInit {
 
-    // ===== Config =====
-    private readonly WARN_ON_SWITCH = true; // set false to skip confirmation
+    private readonly WARN_ON_SWITCH = true;
 
-    // ===== Mode (Signals must be read with mode()) =====
     mode = signal<Mode>('today');
 
-    // ===== Week labels (kept) =====
     monday = signal<string>(this.getMondayISO(new Date()));
     sunday = computed(() => this.addDaysISO(this.monday(), 6));
 
-    // ===== History range =====
     historyStart = this.addDaysISO(this.monday(), -28);
     historyEnd   = this.sunday();
 
-    // ===== Current trainer =====
     trainerId?: number;
 
-    // ===== Class & session =====
     groups: GroupOption[] = [];
     selectedGroupId?: number;
 
@@ -65,11 +59,13 @@ export class ManagePresenceComponent implements OnInit {
     sessions: SessionItem[] = [];
     selectedSessionId?: number;
 
-    // ===== Roster =====
     students: Student[] = [];
-    marks = new Map<number, boolean>();
 
-    // ===== UI =====
+    /** Trois maps distinctes pour l’édition */
+    marksPresent = new Map<number, boolean>();         // id -> present
+    marksJustified = new Map<number, boolean>();       // id -> justified (si absent)
+    marksNote = new Map<number, string>();             // id -> justification note
+
     loading = false;
     saving  = false;
     filter  = '';
@@ -102,14 +98,12 @@ export class ManagePresenceComponent implements OnInit {
 
     private async confirmDiscard(): Promise<boolean> {
         if (!this.WARN_ON_SWITCH) return true;
-
-        // Detect if there is anything to save (selected session and at least one toggle differs)
         if (!this.selectedSessionId || this.students.length === 0) return true;
 
-        // There’s no pristine snapshot, so use presence of any 'true' OR 'false' as edited state.
-        // If you want stricter detection, keep a snapshot after load and compare.
-        const hasAny = this.students.some(s => this.marks.has(s.id));
-        if (!hasAny) return true;
+        const edited = this.students.some(s =>
+            this.marksPresent.has(s.id) || this.marksJustified.has(s.id) || this.marksNote.has(s.id)
+        );
+        if (!edited) return true;
 
         const res = await Swal.fire({
             title: 'Discard changes?',
@@ -133,7 +127,9 @@ export class ManagePresenceComponent implements OnInit {
         this.sessions = [];
 
         this.students = [];
-        this.marks.clear();
+        this.marksPresent.clear();
+        this.marksJustified.clear();
+        this.marksNote.clear();
 
         this.filter = '';
         this.loading = false;
@@ -148,7 +144,6 @@ export class ManagePresenceComponent implements OnInit {
             this.historyStart = this.addDaysISO(this.historyEnd, -28);
         } else {
             this.monday.set(this.getMondayISO(new Date()));
-            // sunday() is computed
         }
     }
 
@@ -200,7 +195,9 @@ export class ManagePresenceComponent implements OnInit {
         }
         this.selectedSessionId = undefined;
         this.students = [];
-        this.marks.clear();
+        this.marksPresent.clear();
+        this.marksJustified.clear();
+        this.marksNote.clear();
     }
 
     onGroupChange(): void {
@@ -210,13 +207,17 @@ export class ManagePresenceComponent implements OnInit {
     onSelectSession(): void {
         if (!this.selectedSessionId) {
             this.students = [];
-            this.marks.clear();
+            this.marksPresent.clear();
+            this.marksJustified.clear();
+            this.marksNote.clear();
             return;
         }
 
         this.loading = true;
         this.students = [];
-        this.marks.clear();
+        this.marksPresent.clear();
+        this.marksJustified.clear();
+        this.marksNote.clear();
 
         const roster$ = this.mode() === 'today'
             ? this.api.getRoster(this.selectedSessionId)
@@ -226,8 +227,16 @@ export class ManagePresenceComponent implements OnInit {
             .pipe(
                 tap(({ students, marks }) => {
                     this.students = students ?? [];
-                    this.students.forEach(s => this.marks.set(s.id, false));
-                    marks.forEach(m => this.marks.set(m.studentId, !!m.present));
+                    // initialisation depuis backend (présent/absent + justification)
+                    this.students.forEach(s => {
+                        const found = marks.find(m => m.studentId === s.id);
+                        const present = found ? !!found.present : false;
+                        this.marksPresent.set(s.id, present);
+                        if (!present) {
+                            if (found?.justified !== undefined) this.marksJustified.set(s.id, !!found.justified);
+                            if (found?.justificationNote) this.marksNote.set(s.id, found.justificationNote);
+                        }
+                    });
                 }),
                 catchError(() => {
                     this.toast('Failed to load roster.', 'error');
@@ -242,20 +251,45 @@ export class ManagePresenceComponent implements OnInit {
 
     // ----------------- ACTIONS -----------------
     setAll(value: boolean): void {
-        for (const s of this.students) this.marks.set(s.id, value);
+        for (const s of this.students) {
+            this.marksPresent.set(s.id, value);
+            if (value) {
+                // remettre justification à neutre si on vient de marquer Present
+                this.marksJustified.delete(s.id);
+                this.marksNote.delete(s.id);
+            }
+        }
     }
 
-    toggle(studentId: number, checked: boolean): void {
-        this.marks.set(studentId, checked);
+    togglePresent(studentId: number, present: boolean): void {
+        this.marksPresent.set(studentId, present);
+        if (present) {
+            // si on passe à Present, on efface justification
+            this.marksJustified.delete(studentId);
+            this.marksNote.delete(studentId);
+        }
+    }
+
+    toggleJustified(studentId: number, justified: boolean): void {
+        this.marksJustified.set(studentId, justified);
+    }
+
+    onNoteChange(studentId: number, note: string): void {
+        this.marksNote.set(studentId, note);
     }
 
     save(): void {
         if (!this.selectedSessionId) return;
 
-        const payload: AttendanceMark[] = this.students.map(s => ({
-            studentId: s.id,
-            present: !!this.marks.get(s.id)
-        }));
+        const payload: AttendanceMark[] = this.students.map(s => {
+            const present = !!this.marksPresent.get(s.id);
+            return {
+                studentId: s.id,
+                present,
+                justified: present ? false : !!this.marksJustified.get(s.id),
+                justificationNote: present ? undefined : (this.marksNote.get(s.id) || undefined)
+            };
+        });
 
         this.saving = true;
 
@@ -316,7 +350,7 @@ export class ManagePresenceComponent implements OnInit {
         return `${y}-${m}-${day}`;
     }
     getMondayISO(d: Date): string {
-        const day = d.getDay() || 7; // Mon=1..Sun=7
+        const day = d.getDay() || 7;
         if (day !== 1) d.setDate(d.getDate() - (day - 1));
         return this.fmtLocalYYYYMMDD(d);
     }
