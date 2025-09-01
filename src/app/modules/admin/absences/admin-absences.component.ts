@@ -8,6 +8,7 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatInputModule } from '@angular/material/input';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
+import Swal from 'sweetalert2';
 
 import {
     AdminAbsencesService,
@@ -138,21 +139,34 @@ export class AdminAbsencesComponent implements OnInit {
         this.api.sendAlert(r.studentId, this.alertThreshold).subscribe({
             next: () => {
                 this.sendingOne.delete(r.studentId);
-                // Option: petit feedback visuel; on rafraîchit juste la liste
                 this.search();
-                alert(`Alert sent to ${r.studentName}.`);
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Email sent',
+                    text: `Alert successfully sent to ${r.studentName}.`,
+                    confirmButtonText: 'OK'
+                });
             },
-            error: () => {
+            error: (err) => {
                 this.sendingOne.delete(r.studentId);
-                alert('Failed to send alert.');
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Sending failed',
+                    html: `
+          <div style="text-align:left">
+            <p>We couldn’t send the alert to <b>${r.studentName}</b>.</p>
+            <p><small>${(err?.error?.message || err?.message || 'Unknown error')}</small></p>
+          </div>`,
+                    confirmButtonText: 'Close'
+                });
             }
         });
     }
 
+
     countOverThreshold(): number {
         return (this.rows || []).filter(r => this.canAlert(r)).length;
     }
-
     sendBulkAlerts(): void {
         if (this.sendingBulk) return;
         this.sendingBulk = true;
@@ -166,11 +180,26 @@ export class AdminAbsencesComponent implements OnInit {
             next: res => {
                 this.sendingBulk = false;
                 this.search();
-                alert(`Bulk alerts sent: ${res?.sent ?? 0}`);
+                const count = res?.sent ?? 0;
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Bulk emails sent',
+                    html: `<b>${count}</b> alert${count===1?'':'s'} have been sent.`,
+                    confirmButtonText: 'Great'
+                });
             },
-            error: () => {
+            error: (err) => {
                 this.sendingBulk = false;
-                alert('Failed to send bulk alerts.');
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Bulk sending failed',
+                    html: `
+          <div style="text-align:left">
+            <p>We couldn’t send the bulk alerts.</p>
+            <p><small>${(err?.error?.message || err?.message || 'Unknown error')}</small></p>
+          </div>`,
+                    confirmButtonText: 'Close'
+                });
             }
         });
     }
