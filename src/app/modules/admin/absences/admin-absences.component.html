@@ -1,0 +1,132 @@
+<!-- src/app/modules/admin/absences/admin-absences.component.html -->
+<mat-card class="aa-card aa-centered">
+
+    <!-- Filters (auto-refresh on change) -->
+    <div class="aa-filters">
+        <mat-form-field appearance="outline">
+            <mat-label>Speciality</mat-label>
+            <mat-select [(ngModel)]="selectedSpecialite" (selectionChange)="onSpecialiteChange()">
+                <mat-option *ngFor="let s of specialites" [value]="s">{{ s }}</mat-option>
+            </mat-select>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+            <mat-label>Group</mat-label>
+            <mat-select [(ngModel)]="selectedGroupId"
+                        [disabled]="!groups.length"
+                        (selectionChange)="onGroupChange()">
+                <mat-option *ngFor="let g of groups" [value]="g.id">{{ g.nom }}</mat-option>
+            </mat-select>
+        </mat-form-field>
+
+        <div class="aa-dates">
+            <label>From <input type="date" [(ngModel)]="start" (ngModelChange)="onDatesChange()"></label>
+            <label>To <input type="date" [(ngModel)]="end" (ngModelChange)="onDatesChange()"></label>
+        </div>
+
+        <!-- NEW: Bulk alert bar -->
+        <div class="aa-bulk-alert" *ngIf="rows.length">
+      <span class="pill warn">
+        <mat-icon>error_outline</mat-icon>
+        >{{ alertThreshold }} unjustified:
+        <strong>{{ countOverThreshold() }}</strong>
+      </span>
+            <button mat-flat-button color="primary"
+                    (click)="sendBulkAlerts()"
+                    [disabled]="!countOverThreshold() || sendingBulk">
+                <mat-icon>notifications_active</mat-icon>&nbsp;
+                {{ sendingBulk ? 'Sending…' : 'Alert all (> ' + alertThreshold + ')' }}
+            </button>
+        </div>
+    </div>
+
+    <!-- Sort header -->
+    <div class="aa-sortbar" *ngIf="rows.length">
+        <button mat-stroked-button (click)="toggleSort('total')">
+            Total Absences
+            <mat-icon *ngIf="sortBy==='total'">{{ dir==='asc' ? 'arrow_upward' : 'arrow_downward' }}</mat-icon>
+        </button>
+
+        <button mat-stroked-button (click)="toggleSort('unjustified')">
+            Unjustified
+            <mat-icon *ngIf="sortBy==='unjustified'">{{ dir==='asc' ? 'arrow_upward' : 'arrow_downward' }}</mat-icon>
+        </button>
+
+        <button mat-stroked-button (click)="toggleSort('name')">
+            Name
+            <mat-icon *ngIf="sortBy==='name'">{{ dir==='asc' ? 'arrow_upward' : 'arrow_downward' }}</mat-icon>
+        </button>
+    </div>
+
+    <!-- Table -->
+    <div class="aa-table" *ngIf="rows.length; else empty">
+        <div class="aa-head">
+            <div>Student</div>
+            <div>Email</div>
+            <div>Group</div>
+            <div class="num">Total</div>
+            <div class="num">Unjustified</div>
+            <div class="center">Actions</div>
+        </div>
+
+        <div class="aa-row" *ngFor="let r of rows">
+            <div>{{ r.studentName }}</div>
+            <div class="muted break">{{ r.studentEmail }}</div>
+            <div>{{ r.groupName }}</div>
+            <div class="num">{{ r.totalAbsences }}</div>
+            <div class="num" [class.red]="r.unjustifiedAbsences > alertThreshold">
+                {{ r.unjustifiedAbsences }}
+            </div>
+            <div class="center actions">
+                <button mat-button (click)="openDetails(r)">
+                    <mat-icon>visibility</mat-icon>&nbsp;Details
+                </button>
+
+                <!-- NEW: per-student alert -->
+                <button mat-stroked-button color="primary"
+                        [disabled]="!canAlert(r) || sendingOne.has(r.studentId)"
+                        (click)="sendAlert(r)">
+                    <mat-icon>notifications</mat-icon>
+                    {{ sendingOne.has(r.studentId) ? 'Sending…' : 'Alert' }}
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <ng-template #empty>
+        <div class="aa-empty">
+            {{ loading ? 'Loading...' : (selectedSpecialite ? 'No data for current filters.' : 'Choose a speciality to start.') }}
+        </div>
+    </ng-template>
+
+    <!-- Details Drawer -->
+    <div class="aa-drawer" *ngIf="detailsFor">
+        <div class="aa-drawer-head">
+            <div>
+                <strong>{{ detailsFor.studentName }}</strong>
+                <div class="muted">{{ detailsFor.studentEmail }}</div>
+            </div>
+            <button mat-icon-button (click)="closeDetails()"><mat-icon>close</mat-icon></button>
+        </div>
+
+        <div class="aa-drawer-body" *ngIf="details.length; else noDetails">
+            <div class="line" *ngFor="let d of details">
+                <div>{{ d.date }}</div>
+                <div>{{ d.start }}–{{ d.end }}</div>
+                <div>{{ d.matiere }}</div>
+                <div>{{ d.room || '—' }}</div>
+                <div class="badge"
+                     [class.badge-absent]="d.statut==='ABSENT'"
+                     [class.badge-present]="d.statut==='PRESENT'"
+                     [class.badge-late]="d.statut==='RETARD'">
+                    {{ d.statut }}
+                </div>
+            </div>
+        </div>
+
+        <ng-template #noDetails>
+            <div class="aa-empty">{{ loadingDetails ? 'Loading…' : 'No absence details.' }}</div>
+        </ng-template>
+    </div>
+
+</mat-card>

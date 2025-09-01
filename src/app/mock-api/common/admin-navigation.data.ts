@@ -36,7 +36,7 @@ export const adminNavigation: Navigation = {
             title: 'Attendance',
             type: 'basic',
             icon: 'heroicons_outline:clipboard-document',
-            link: '/admin/attendance'
+            link: '/admin/absences'
         },
         {
             id: 'admin.grades',

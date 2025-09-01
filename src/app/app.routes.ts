@@ -80,7 +80,13 @@ export const appRoutes: Route[] = [
     loadChildren: () =>
     import('app/modules/admin/dashboards/manage-plannings/manage-plannings.routes')
         .then(m => m.default)
-},
+},  {
+                path: 'admin/absences',
+                loadChildren: () =>
+                    import('./modules/admin/absences/admin-absences.routes')
+                        .then(m => m.ADMIN_ABSENCES_ROUTES)
+            },
+
             {
                 path: 'add-user',
                 loadChildren: () =>
