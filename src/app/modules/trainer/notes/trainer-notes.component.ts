@@ -1,4 +1,3 @@
-// src/app/modules/trainer/notes/trainer-notes.component.ts
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { FormArray, FormBuilder, FormControl, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
@@ -8,13 +7,15 @@ import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
-import { MatDialog, MatDialogModule } from '@angular/material/dialog'; // <-- NEW
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
+import { MatBadgeModule } from '@angular/material/badge';
 import { HttpClient } from '@angular/common/http';
 import { TrainerNotesApi, SaveNotesRequest, TrainerNoteRow } from './trainer-notes.api';
 import Swal from 'sweetalert2';
 
-// ⬇️ IMPORTE LE DIALOG (chemin à adapter si besoin)
-import { ClaimsInboxDialogComponent } from '../claims/claims-inbox-dialog.component';
+// NEW: dialogs & API for claims
+import { ClaimsInboxDialogComponent } from '../../trainer/claims/claims-inbox-dialog.component';
+import { TrainerClaimsApi } from '../../trainer/claims/trainer-claims.api';
 
 type Groupe = { id: number; nom: string; specialite: string };
 
@@ -42,14 +43,16 @@ type GradeRow = {
         MatSelectModule,
         MatButtonModule,
         MatIconModule,
-        MatDialogModule, // <-- NEW
+        MatDialogModule,
+        MatBadgeModule,
     ],
 })
 export class TrainerNotesComponent implements OnInit {
     private fb = inject(FormBuilder);
     private http = inject(HttpClient);
     private api = inject(TrainerNotesApi);
-    private dialog = inject(MatDialog); // <-- NEW
+    private dialog = inject(MatDialog);
+    private claimsApi = inject(TrainerClaimsApi);
 
     groups: Groupe[] = [];
     subjects: string[] = []; // filtered by specialty
@@ -58,6 +61,9 @@ export class TrainerNotesComponent implements OnInit {
 
     // '40_60' or '20_80'
     weightMode = this.fb.control<'40_60' | '20_80'>('40_60', { nonNullable: true });
+
+    // NEW: pending inbox counter
+    pendingCount = signal(0);
 
     form = this.fb.group({
         groupeId: this.fb.control<number | null>(null, Validators.required),
@@ -114,17 +120,22 @@ export class TrainerNotesComponent implements OnInit {
 
     ngOnInit(): void {
         this.fetchGroupsForTrainer();
-        // recompute all averages when weight mode changes
         this.weightMode.valueChanges.subscribe(() => this.recomputeAllAverages());
+        this.refreshClaimsCount(); // load badge count on page load
     }
 
     // === NEW ===
-    /** Open the dialog that lists pending claims and lets the trainer approve/reject them */
     openClaimsInbox(): void {
         this.dialog.open(ClaimsInboxDialogComponent, {
             width: '860px',
-            // you can pass data if you want to scope by group/subject later
-            data: {}
+        }).afterClosed().subscribe(() => this.refreshClaimsCount());
+    }
+
+    // === NEW ===
+    refreshClaimsCount(): void {
+        this.claimsApi.inbox().subscribe({
+            next: rows => this.pendingCount.set((rows || []).length),
+            error: () => this.pendingCount.set(0),
         });
     }
 
@@ -174,7 +185,6 @@ export class TrainerNotesComponent implements OnInit {
         return +(ccS * wCc + exS * wExam).toFixed(2);
     }
 
-    /** Ensures 0..20, clamps if out of range and shows a SweetAlert */
     private enforceBoundsWithAlert(label: 'CC' | 'Exam', value: number | null | undefined): number | null {
         if (value == null || Number.isNaN(value as any)) return null;
 
@@ -191,20 +201,17 @@ export class TrainerNotesComponent implements OnInit {
         return value;
     }
 
-    /** Called on blur of CC/Exam: clamp + recompute average */
     onNoteBlur(row: FormGroup<GradeRow>, key: 'cc' | 'examen') {
         const ctrl = row.controls[key];
         const fixed = this.enforceBoundsWithAlert(key === 'cc' ? 'CC' : 'Exam', ctrl.value);
         if (fixed !== ctrl.value) {
             ctrl.setValue(fixed, { emitEvent: false });
         }
-        // Immediate recompute
         row.controls.moyenne.setValue(this.computeAverage(row.controls.cc.value, row.controls.examen.value), {
             emitEvent: false,
         });
     }
 
-    /** Auto-recompute (no alert) while typing */
     private bindRowRecalc(row: FormGroup<GradeRow>): void {
         row.controls.cc.valueChanges.subscribe(() => {
             row.controls.moyenne.setValue(this.computeAverage(row.controls.cc.value, row.controls.examen.value), {

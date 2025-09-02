@@ -1,6 +1,6 @@
 <mat-card class="aa-card aa-centered">
     <div class="aa-filters" [formGroup]="form">
-        <!-- Groupe -->
+        <!-- Group -->
         <mat-form-field appearance="outline">
             <mat-label>Group</mat-label>
             <mat-select formControlName="groupeId" (selectionChange)="onGroupChanged($event.value)">
@@ -8,7 +8,7 @@
             </mat-select>
         </mat-form-field>
 
-        <!-- Subject forcé depuis la spécialité du groupe -->
+        <!-- Subject (computed from group's specialty) -->
         <mat-form-field appearance="outline">
             <mat-label>Subject</mat-label>
             <mat-select formControlName="matiere" [disabled]="!subjects.length" (selectionChange)="loadSheet()">
@@ -16,7 +16,7 @@
             </mat-select>
         </mat-form-field>
 
-        <!-- Pondération -->
+        <!-- Weights -->
         <div class="weights">
             <label class="weights-title">Weights:</label>
             <label><input type="radio" [formControl]="weightMode" value="40_60" /> CC 40% / Exam 60%</label>
@@ -25,8 +25,18 @@
 
         <span class="spacer"></span>
 
-        <!-- NEW: open claims inbox dialog -->
-        <button mat-stroked-button (click)="openClaimsInbox()">
+        <!-- NEW: claims inbox with badge -->
+        <button
+                mat-stroked-button
+                class="aa-inbox"
+                (click)="openClaimsInbox()"
+                [matBadge]="pendingCount()"
+                [matBadgeHidden]="pendingCount() === 0"
+                matBadgeColor="primary"
+                matBadgeOverlap="false"
+                matBadgePosition="above after"
+                aria-label="Open claims inbox"
+        >
             <mat-icon>inbox</mat-icon>&nbsp;Claims inbox
         </button>
 
@@ -45,7 +55,7 @@
         </div>
 
         <div class="aa-row" *ngFor="let row of rows.controls; let i = index; trackBy: trackByIndex" [formGroup]="row">
-            <div>
+            <div class="student">
                 <div><strong>{{ row.value.studentName }}</strong></div>
                 <div class="muted">{{ row.value.studentEmail }}</div>
             </div>
@@ -75,7 +85,7 @@
             </div>
 
             <div class="num">
-                <input class="note-input" type="number" formControlName="moyenne" readonly />
+                <input class="note-input avg-badge" type="number" formControlName="moyenne" readonly />
             </div>
 
             <div>
