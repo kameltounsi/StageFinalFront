@@ -1,0 +1,44 @@
+<!-- src/app/modules/trainer/claims/decide-claim-dialog.component.html -->
+<h2 mat-dialog-title style="margin:0;">
+    {{ data.mode === 'approve' ? 'Approve claim' : 'Reject claim' }} — {{ data.claim.matiere }}
+</h2>
+
+<div mat-dialog-content>
+    <p><strong>Student message:</strong></p>
+    <div style="background:#f9fafb;border:1px solid #e5e7eb;border-radius:8px;padding:8px 10px;margin-bottom:12px;max-height:140px;overflow:auto">
+        {{ data.claim.message || '—' }}
+    </div>
+
+    <form [formGroup]="form" (ngSubmit)="save()">
+        <mat-form-field appearance="outline" style="width:100%; margin-bottom:8px;">
+            <mat-label>{{ data.mode === 'approve' ? 'Reply to student (optional)' : 'Reply to student (required)' }}</mat-label>
+            <textarea matInput rows="3" formControlName="reply" placeholder="Add a short reply"></textarea>
+            <mat-error *ngIf="form.controls.reply.hasError('required')">Reply is required.</mat-error>
+            <mat-error *ngIf="form.controls.reply.hasError('minlength')">Please write at least 5 characters.</mat-error>
+        </mat-form-field>
+
+        <ng-container *ngIf="data.mode === 'approve'">
+            <div style="display:flex; gap:10px;">
+                <mat-form-field appearance="outline" style="flex:1">
+                    <mat-label>New CC (optional)</mat-label>
+                    <input matInput type="number" step="0.25" min="0" max="20" formControlName="newCc" />
+                </mat-form-field>
+
+                <mat-form-field appearance="outline" style="flex:1">
+                    <mat-label>New Exam (optional)</mat-label>
+                    <input matInput type="number" step="0.25" min="0" max="20" formControlName="newExamen" />
+                </mat-form-field>
+            </div>
+            <div *ngIf="form.errors?.['range']" style="color:#b42318; font-size:.9rem; margin-top:4px;">
+                New values must be between 0 and 20.
+            </div>
+        </ng-container>
+    </form>
+</div>
+
+<div mat-dialog-actions align="end">
+    <button mat-button (click)="cancel()" [disabled]="saving">Cancel</button>
+    <button mat-flat-button color="primary" (click)="save()" [disabled]="saving">
+        {{ data.mode === 'approve' ? 'Approve' : 'Reject' }}
+    </button>
+</div>

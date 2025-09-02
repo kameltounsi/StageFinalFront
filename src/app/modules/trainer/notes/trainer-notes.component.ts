@@ -1,3 +1,4 @@
+// src/app/modules/trainer/notes/trainer-notes.component.ts
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { FormArray, FormBuilder, FormControl, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
@@ -7,9 +8,13 @@ import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog'; // <-- NEW
 import { HttpClient } from '@angular/common/http';
 import { TrainerNotesApi, SaveNotesRequest, TrainerNoteRow } from './trainer-notes.api';
 import Swal from 'sweetalert2';
+
+// ⬇️ IMPORTE LE DIALOG (chemin à adapter si besoin)
+import { ClaimsInboxDialogComponent } from '../claims/claims-inbox-dialog.component';
 
 type Groupe = { id: number; nom: string; specialite: string };
 
@@ -37,12 +42,14 @@ type GradeRow = {
         MatSelectModule,
         MatButtonModule,
         MatIconModule,
+        MatDialogModule, // <-- NEW
     ],
 })
 export class TrainerNotesComponent implements OnInit {
     private fb = inject(FormBuilder);
     private http = inject(HttpClient);
     private api = inject(TrainerNotesApi);
+    private dialog = inject(MatDialog); // <-- NEW
 
     groups: Groupe[] = [];
     subjects: string[] = []; // filtered by specialty
@@ -109,6 +116,16 @@ export class TrainerNotesComponent implements OnInit {
         this.fetchGroupsForTrainer();
         // recompute all averages when weight mode changes
         this.weightMode.valueChanges.subscribe(() => this.recomputeAllAverages());
+    }
+
+    // === NEW ===
+    /** Open the dialog that lists pending claims and lets the trainer approve/reject them */
+    openClaimsInbox(): void {
+        this.dialog.open(ClaimsInboxDialogComponent, {
+            width: '860px',
+            // you can pass data if you want to scope by group/subject later
+            data: {}
+        });
     }
 
     trackByIndex = (i: number) => i;

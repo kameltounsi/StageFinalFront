@@ -1,9 +1,9 @@
+<!-- src/app/modules/student/notes/student-notes.component.html -->
 <mat-card class="sn-card">
     <div class="sn-toolbar">
         <h3 class="sn-title">My Grades</h3>
 
         <div class="sn-actions">
-            <!-- filter select -->
             <mat-form-field appearance="outline" class="sn-filter">
                 <mat-label>Filter by subject</mat-label>
                 <mat-select [(value)]="selectedMatiere">
@@ -27,15 +27,16 @@
             <div class="sn-cell sn-num">Average</div>
             <div class="sn-cell sn-col-weight">Weighting</div>
             <div class="sn-cell sn-col-comment">Comment</div>
+            <div class="sn-cell sn-col-actions">Actions</div>
         </div>
 
-        <ng-container *ngIf="rows?.length; else empty">
-            <div
-                    class="sn-row sn-body"
-                    *ngFor="let r of rows; trackBy: trackByMatiere"
-            >
+        <ng-container *ngIf="displayedRows?.length; else empty">
+            <div class="sn-row sn-body" *ngFor="let r of displayedRows; trackBy: trackByMatiere">
                 <div class="sn-cell sn-col-matiere">
-                    <div class="sn-matiere">{{ r.matiere }}</div>
+                    <div class="sn-matiere">
+                        {{ r.matiere }}
+                        <span *ngIf="claimBadgeText(r.matiere) as badge" class="sn-claim-badge">{{ badge }}</span>
+                    </div>
                 </div>
 
                 <div class="sn-cell sn-num">
@@ -47,9 +48,9 @@
                 </div>
 
                 <div class="sn-cell sn-num">
-                    <span class="sn-chip sn-chip-avg" [ngClass]="gradeClass(r.moyenne, true)">
-                        {{ r.moyenne ?? '—' }}
-                    </span>
+          <span class="sn-chip sn-chip-avg" [ngClass]="gradeClass(r.moyenne, true)">
+            {{ r.moyenne ?? '—' }}
+          </span>
                 </div>
 
                 <div class="sn-cell sn-col-weight">
@@ -59,9 +60,16 @@
                 </div>
 
                 <div class="sn-cell sn-col-comment">
-                    <span class="sn-comment" [title]="r.commentaire || ''">
-                        {{ r.commentaire || '—' }}
-                    </span>
+          <span class="sn-comment" [title]="r.commentaire || ''">
+            {{ r.commentaire || '—' }}
+          </span>
+                </div>
+
+                <div class="sn-cell sn-col-actions">
+                    <button mat-stroked-button (click)="requestReview(r)">
+                        <mat-icon>flag</mat-icon>
+                        Request review
+                    </button>
                 </div>
             </div>
         </ng-container>

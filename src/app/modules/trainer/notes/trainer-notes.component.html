@@ -25,6 +25,11 @@
 
         <span class="spacer"></span>
 
+        <!-- NEW: open claims inbox dialog -->
+        <button mat-stroked-button (click)="openClaimsInbox()">
+            <mat-icon>inbox</mat-icon>&nbsp;Claims inbox
+        </button>
+
         <button mat-flat-button color="primary" (click)="save()" [disabled]="saving() || !rows.length">
             <mat-icon>save</mat-icon>&nbsp;{{ saving() ? 'Saving…' : 'Save all' }}
         </button>

@@ -1,0 +1,62 @@
+<!-- src/app/modules/trainer/claims/claims-inbox-dialog.component.html -->
+<h2 mat-dialog-title class="tc-d-title">
+    <mat-icon>inbox</mat-icon>
+    Grade Claims
+</h2>
+
+<div class="tc-d-toolbar">
+    <mat-form-field appearance="outline" class="tc-d-filter">
+        <mat-label>Filter by subject</mat-label>
+        <mat-select [(value)]="selected">
+            <mat-option [value]="''">All</mat-option>
+            <mat-option *ngFor="let s of subjects" [value]="s">{{ s }}</mat-option>
+        </mat-select>
+    </mat-form-field>
+
+    <button mat-stroked-button (click)="reload()">
+        <mat-icon>refresh</mat-icon> Refresh
+    </button>
+</div>
+
+<div class="tc-d-body" *ngIf="!loading(); else loadingTpl">
+    <ng-container *ngIf="displayed.length; else emptyTpl">
+        <div class="tc-d-row" *ngFor="let r of displayed">
+            <div class="left">
+                <div class="subject">{{ r.matiere }}</div>
+                <div class="weights" *ngIf="r.weightCc!=null && r.weightExam!=null">
+                    <span class="badge">CC {{ r.weightCc * 100 | number:'1.0-0' }}%</span>
+                    <span class="sep">/</span>
+                    <span class="badge">Exam {{ r.weightExam * 100 | number:'1.0-0' }}%</span>
+                </div>
+                <div class="msg" [title]="r.message || ''">{{ r.message || '—' }}</div>
+            </div>
+            <div class="right">
+                <div class="nums">
+                    <span class="chip">CC: {{ r.cc ?? '—' }}</span>
+                    <span class="chip">Exam: {{ r.examen ?? '—' }}</span>
+                    <span class="chip avg">Avg: {{ r.moyenne ?? '—' }}</span>
+                </div>
+                <div class="actions">
+                    <button mat-flat-button color="primary" (click)="openApprove(r)">
+                        <mat-icon>check_circle</mat-icon> Approve
+                    </button>
+                    <button mat-stroked-button color="warn" (click)="openReject(r)">
+                        <mat-icon>cancel</mat-icon> Reject
+                    </button>
+                </div>
+            </div>
+        </div>
+    </ng-container>
+</div>
+
+<ng-template #loadingTpl>
+    <div class="tc-d-loading"><mat-spinner diameter="36"></mat-spinner></div>
+</ng-template>
+
+<ng-template #emptyTpl>
+    <div class="tc-d-empty">No pending claims.</div>
+</ng-template>
+
+<div class="tc-d-actions">
+    <button mat-button (click)="close()">Close</button>
+</div>

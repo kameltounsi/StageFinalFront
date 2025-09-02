@@ -40,7 +40,8 @@
 /* header & rows */
 .sn-row{
     display:grid;
-    grid-template-columns: 2.2fr .7fr .7fr .9fr 1.3fr 2fr;
+    /* + Actions column (right) */
+    grid-template-columns: 2.2fr .7fr .7fr .9fr 1.3fr 2fr 1.1fr;
     gap:0;
 }
 .sn-thead{
@@ -64,6 +65,10 @@
 .sn-col-matiere .sn-matiere{
     font-weight:600;
     color:#1f2a44;
+    display:flex;
+    align-items:center;
+    gap:8px;
+    flex-wrap:wrap;
 }
 .sn-col-weight{
     display:flex; align-items:center; gap:8px; flex-wrap:wrap;
@@ -72,6 +77,26 @@
     color:#5f6b84;
     white-space:nowrap; overflow:hidden; text-overflow:ellipsis; display:block;
 }
+
+/* Actions column */
+.sn-col-actions{
+    display:flex;
+    align-items:center;
+    justify-content:flex-end;
+    gap:8px;
+    white-space:nowrap;
+}
+.sn-col-actions .mat-mdc-stroked-button,
+.sn-col-actions .mat-stroked-button{
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    padding: 0 12px;
+    height: 36px;
+    border-radius: 10px;
+    font-weight:600;
+}
+.sn-col-actions .mat-icon{ font-size:20px; width:20px; height:20px; }
 
 /* numbers */
 .sn-num{ text-align:right; }
@@ -110,6 +135,24 @@
 }
 .sn-sep{ color:#9aa7bd; }
 
+/* claim badge */
+.sn-claim-badge{
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    padding:2px 8px;
+    font-size:12px;
+    border-radius:999px;
+    border:1px solid #c7d2fe;
+    background:#eef2ff;
+    color:#3730a3;
+    line-height:1.2;
+}
+/* optional status variants (add class in template if desired) */
+.sn-claim-badge.is-pending { background:#fff7ed; border-color:#fed7aa; color:#9a3412; }
+.sn-claim-badge.is-approved{ background:#ecfdf5; border-color:#bbf7d0; color:#065f46; }
+.sn-claim-badge.is-rejected{ background:#fef2f2; border-color:#fecaca; color:#991b1b; }
+
 /* empty state */
 .sn-empty{
     display:flex;
@@ -129,19 +172,25 @@
 /* responsive */
 @media (max-width: 960px){
     .sn-row{
-        grid-template-columns: 1.7fr .7fr .7fr .8fr 1.2fr 1.6fr;
+        grid-template-columns: 1.7fr .7fr .7fr .8fr 1.2fr 1.6fr .9fr;
     }
 }
 @media (max-width: 720px){
     .sn-toolbar{ align-items:flex-start; }
     .sn-actions{ width:100%; justify-content:flex-end; }
     .sn-row{
-        grid-template-columns: 1.6fr .7fr .7fr .8fr 1.1fr 1.4fr;
+        grid-template-columns: 1.6fr .7fr .7fr .8fr 1.1fr 1.4fr .9fr;
+    }
+    .sn-col-actions .mat-mdc-stroked-button,
+    .sn-col-actions .mat-stroked-button{
+        padding:0 10px; height:34px;
     }
 }
 @media (max-width: 600px){
+    /* Collapse comment column on small screens to keep action available */
     .sn-row{
-        grid-template-columns: 1.3fr .6fr .6fr .8fr 1fr;
+        grid-template-columns: 1.3fr .6fr .6fr .8fr 1fr .9fr; /* subject, cc, exam, avg, weight, actions */
     }
     .sn-col-comment{ display:none; }
+    .sn-col-actions{ justify-content:flex-start; }
 }
