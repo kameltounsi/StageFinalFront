@@ -1,9 +1,6 @@
-import {
-    Component, OnInit, inject, signal,
-} from '@angular/core';
-import {
-    FormArray, FormBuilder, FormControl, FormGroup, Validators, ReactiveFormsModule,
-} from '@angular/forms';
+// src/app/modules/trainer/notes/trainer-notes.component.ts
+import { Component, OnInit, inject, signal } from '@angular/core';
+import { FormArray, FormBuilder, FormControl, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -13,14 +10,17 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { HttpClient } from '@angular/common/http';
 import { TrainerNotesApi, SaveNotesRequest, TrainerNoteRow } from './trainer-notes.api';
+import Swal from 'sweetalert2';
 
-type Groupe = { id: number; nom: string };
+type Groupe = { id: number; nom: string; specialite: string };
 
 type GradeRow = {
     studentId: FormControl<number>;
     studentName: FormControl<string>;
     studentEmail: FormControl<string>;
-    valeur: FormControl<number | null>;
+    cc: FormControl<number | null>;
+    examen: FormControl<number | null>;
+    moyenne: FormControl<number | null>;
     commentaire: FormControl<string | null>;
 };
 
@@ -41,23 +41,66 @@ type GradeRow = {
     ],
 })
 export class TrainerNotesComponent implements OnInit {
-
     private fb = inject(FormBuilder);
     private http = inject(HttpClient);
     private api = inject(TrainerNotesApi);
 
     groups: Groupe[] = [];
+    subjects: string[] = []; // ← sujets filtrés par spécialité
     loading = signal(false);
     saving = signal(false);
 
-    /** Form principal */
+    // radio: '40_60' ou '20_80'
+    weightMode = this.fb.control<'40_60' | '20_80'>('40_60', { nonNullable: true });
+
     form = this.fb.group({
-        // IMPORTANT: "groupeId" (conforme au backend)
         groupeId: this.fb.control<number | null>(null, Validators.required),
-        matiere: this.fb.control<string>('', Validators.required),
-        date: this.fb.control<string>('', Validators.required), // yyyy-MM-dd (string)
+        matiere: this.fb.control<string>({ value: '', disabled: true }, Validators.required),
         rows: this.fb.array<FormGroup<GradeRow>>([]),
     });
+
+    // Mapping Spécialité -> Matières autorisées
+    readonly MATIERES_PAR_SPECIALITE: Record<string, string[]> = {
+        'Cybersecurity & Ethical Hacking': [
+            'Réseaux & Protocoles Sécurisés',
+            'Tests d’intrusion (Pentest)',
+            'Gestion des vulnérabilités',
+        ],
+        'Web Development': [
+            'Frontend (Angular/React)',
+            'Backend (Spring/Node)',
+            'Bases de données & SQL',
+        ],
+        'Mobile Application Development': [
+            'Android (Kotlin/Java)',
+            'iOS (SwiftUI)',
+            'Cross-platform (Flutter)',
+        ],
+        'Graphic Design & Multimedia': ['Design UI/UX', 'Suite Adobe (PS/AI/PR)', 'Motion Graphics'],
+        'Digital Marketing & Social Media Management': [
+            'Stratégie Social Media',
+            'SEO/SEA & Analytics',
+            'Content Marketing',
+        ],
+        'Electrical Installation & Building Wiring': [
+            'Schémas & Normes électriques',
+            'Tableaux & Protections',
+            'Dépannage & sécurité',
+        ],
+        'Plumbing & Sanitary Installations': [
+            'Réseaux d’eau & évacuation',
+            'Matériaux & raccords',
+            'Maintenance & étanchéité',
+        ],
+        'Masonry & Concrete Works': ['Matériaux & dosages béton', 'Coffrage & ferraillage', 'Techniques de maçonnerie'],
+        'Carpentry & Woodworking': ['Conception & traçage', 'Assemblages & usinage', 'Finition & sécurité'],
+        'HVAC Systems': ['Thermodynamique appliquée', 'Climatisation & froid', 'Chauffage & ventilation'],
+        'Accounting & Financial Management': ['Comptabilité générale', 'Analyse financière', 'Fiscalité & TVA'],
+        'Human Resources Management': ['Recrutement & onboarding', 'Droit du travail', 'GPEC & formation'],
+        'Office Administration & Secretarial Studies': ['Bureautique avancée', 'Gestion documentaire', 'Communication professionnelle'],
+        'Sales & Commercial Techniques': ['Techniques de vente', 'Négociation & CRM', 'Merchandising'],
+        'Logistics & Supply Chain Management': ['Gestion des stocks', 'Transport & douane', 'Planification (MRP/DRP)'],
+    };
 
     get rows(): FormArray<FormGroup<GradeRow>> {
         return this.form.controls.rows;
@@ -65,12 +108,11 @@ export class TrainerNotesComponent implements OnInit {
 
     ngOnInit(): void {
         this.fetchGroupsForTrainer();
+        this.weightMode.valueChanges.subscribe(() => this.recomputeAllAverages());
     }
 
-    /** trackBy simple pour *ngFor */
-    trackByIndex = (index: number) => index;
+    trackByIndex = (i: number) => i;
 
-    /** Récupère les groupes du formateur */
     private fetchGroupsForTrainer(): void {
         this.http.get<Groupe[]>('/api/trainer/my-groups').subscribe({
             next: (gs) => (this.groups = gs ?? []),
@@ -78,64 +120,113 @@ export class TrainerNotesComponent implements OnInit {
         });
     }
 
-    /** Charge la feuille pour groupe + matière + date */
+    onGroupChanged(groupeId: number | null) {
+        // reset
+        this.rows.clear();
+        this.subjects = [];
+        this.form.controls.matiere.setValue('');
+        this.form.controls.matiere.disable();
+
+        if (!groupeId) return;
+
+        const g = this.groups.find(x => x.id === groupeId);
+        const spec = g?.specialite ?? '';
+        this.subjects = this.MATIERES_PAR_SPECIALITE[spec] ?? [];
+
+        // activer le select "matiere" seulement si on a des sujets
+        if (this.subjects.length) {
+            this.form.controls.matiere.enable();
+        }
+    }
+
+    private getWeights(): { wCc: number; wExam: number } {
+        return this.weightMode.value === '20_80' ? { wCc: 0.2, wExam: 0.8 } : { wCc: 0.4, wExam: 0.6 };
+    }
+
+    private clamp20(v: number | null | undefined): number | null {
+        if (v == null) return null;
+        return Math.max(0, Math.min(20, v));
+    }
+
+    private computeAverage(cc: number | null, ex: number | null): number | null {
+        const { wCc, wExam } = this.getWeights();
+        const ccS = this.clamp20(cc);
+        const exS = this.clamp20(ex);
+        if (ccS == null && exS == null) return null;
+        if (ccS == null) return exS!;
+        if (exS == null) return ccS;
+        return +(ccS * wCc + exS * wExam).toFixed(2);
+    }
+
+    private bindRowRecalc(row: FormGroup<GradeRow>): void {
+        row.controls.cc.valueChanges.subscribe(() => {
+            row.controls.moyenne.setValue(this.computeAverage(row.controls.cc.value, row.controls.examen.value), { emitEvent: false });
+        });
+        row.controls.examen.valueChanges.subscribe(() => {
+            row.controls.moyenne.setValue(this.computeAverage(row.controls.cc.value, row.controls.examen.value), { emitEvent: false });
+        });
+    }
+
+    private recomputeAllAverages(): void {
+        this.rows.controls.forEach(r => {
+            r.controls.moyenne.setValue(this.computeAverage(r.controls.cc.value, r.controls.examen.value), { emitEvent: false });
+        });
+    }
+
     loadSheet(): void {
         if (this.form.invalid) return;
 
         const groupeId = this.form.controls.groupeId.value!;
         const matiere = (this.form.controls.matiere.value || '').trim();
-        const date = this.form.controls.date.value!; // garder tel quel (yyyy-MM-dd)
-
-        if (!groupeId || !matiere || !date) return;
+        if (!groupeId || !matiere) return;
 
         this.loading.set(true);
         this.rows.clear();
 
-        // Appel du service aligné avec le backend: /api/trainer/notes/sheet
-        this.api.loadSheet(groupeId, matiere, date).subscribe({
+        this.api.loadSheet(groupeId, matiere).subscribe({
             next: (rows: TrainerNoteRow[]) => {
-                (rows || []).forEach((r) => {
-                    this.rows.push(
-                        this.fb.group<GradeRow>({
-                            studentId: this.fb.control(r.studentId, { nonNullable: true }),
-                            studentName: this.fb.control(r.studentName, { nonNullable: true }),
-                            studentEmail: this.fb.control(r.studentEmail, { nonNullable: true }),
-                            valeur: this.fb.control(
-                                r.valeur ?? null,
-                                { validators: [Validators.min(0), Validators.max(20)] }
-                            ),
-                            commentaire: this.fb.control(r.commentaire ?? null),
-                        })
-                    );
+                (rows || []).forEach(r => {
+                    const row = this.fb.group<GradeRow>({
+                        studentId: this.fb.control(r.studentId, { nonNullable: true }),
+                        studentName: this.fb.control(r.studentName, { nonNullable: true }),
+                        studentEmail: this.fb.control(r.studentEmail, { nonNullable: true }),
+                        cc: this.fb.control(r.cc ?? null, { validators: [Validators.min(0), Validators.max(20)] }),
+                        examen: this.fb.control(r.examen ?? null, { validators: [Validators.min(0), Validators.max(20)] }),
+                        moyenne: this.fb.control(r.moyenne ?? null),
+                        commentaire: this.fb.control<string | null>(null),
+                    });
+                    this.bindRowRecalc(row);
+                    this.rows.push(row);
                 });
+                this.recomputeAllAverages();
             },
-            error: () => {},
+            error: () => { /* silencieux */ },
             complete: () => this.loading.set(false),
         });
     }
 
-    /** Sauvegarde toutes les notes affichées */
     save(): void {
         if (this.form.invalid || !this.rows.length) return;
-
         this.saving.set(true);
 
+        const { wCc, wExam } = this.getWeights();
+
         const body: SaveNotesRequest = {
-            // clé attendue par le back (JsonAlias gère aussi groupId si besoin)
             groupeId: this.form.controls.groupeId.value!,
             matiere: this.form.controls.matiere.value!,
-            date: this.form.controls.date.value!, // string yyyy-MM-dd
-            items: this.rows.getRawValue().map((r) => ({
+            weightCc: wCc,
+            weightExam: wExam,
+            items: this.rows.getRawValue().map(r => ({
                 studentId: r.studentId,
-                valeur: r.valeur,
+                cc: r.cc,
+                examen: r.examen,
                 commentaire: (r.commentaire ?? '') || null,
             })),
         };
 
-        // Appel du service aligné avec le backend: /api/trainer/notes/bulk
         this.api.saveSheet(body).subscribe({
-            next: () => alert('Notes saved ✅'),
-            error: (e) => { console.error(e); alert('Save failed ❌'); },
+            next: () => Swal.fire('Succès', 'Les notes ont été enregistrées.', 'success'),
+            error: () => Swal.fire('Échec', "L'enregistrement des notes a échoué.", 'error'),
             complete: () => this.saving.set(false),
         });
     }

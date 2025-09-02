@@ -1,25 +1,27 @@
-<mat-card class="aa-card aa-centered" [formGroup]="form">
-
-    <div class="aa-filters">
+<!-- src/app/modules/trainer/notes/trainer-notes.component.html -->
+<mat-card class="aa-card aa-centered">
+    <div class="aa-filters" [formGroup]="form">
         <!-- Groupe -->
         <mat-form-field appearance="outline">
             <mat-label>Group</mat-label>
-            <mat-select formControlName="groupeId" (selectionChange)="loadSheet()">
+            <mat-select formControlName="groupeId" (selectionChange)="onGroupChanged($event.value)">
                 <mat-option *ngFor="let g of groups" [value]="g.id">{{ g.nom }}</mat-option>
             </mat-select>
         </mat-form-field>
 
-        <!-- Matière -->
+        <!-- Subject forcé depuis la spécialité du groupe -->
         <mat-form-field appearance="outline">
             <mat-label>Subject</mat-label>
-            <input matInput formControlName="matiere" (keyup.enter)="loadSheet()">
+            <mat-select formControlName="matiere" [disabled]="!subjects.length" (selectionChange)="loadSheet()">
+                <mat-option *ngFor="let s of subjects" [value]="s">{{ s }}</mat-option>
+            </mat-select>
         </mat-form-field>
 
-        <!-- Date -->
-        <div class="aa-dates">
-            <label>Date
-                <input type="date" formControlName="date" (change)="loadSheet()">
-            </label>
+        <!-- Pondération -->
+        <div class="weights">
+            <label class="weights-title">Weights:</label>
+            <label><input type="radio" [formControl]="weightMode" value="40_60"> CC 40% / Exam 60%</label>
+            <label><input type="radio" [formControl]="weightMode" value="20_80"> CC 20% / Exam 80%</label>
         </div>
 
         <span class="spacer"></span>
@@ -32,21 +34,28 @@
     <div class="aa-table" *ngIf="rows.length; else empty">
         <div class="aa-head">
             <div>Student</div>
-            <div class="num">Note (0–20)</div>
+            <div class="num">CC (0–20)</div>
+            <div class="num">Exam (0–20)</div>
+            <div class="num">Average</div>
             <div>Comment</div>
         </div>
 
-        <!-- Use "let i = index" AND actually use i in trackBy to avoid 'unused constant i' -->
-        <div class="aa-row"
-             *ngFor="let row of rows.controls; let i = index; trackBy: trackByIndex"
-             [formGroup]="row">
+        <div class="aa-row" *ngFor="let row of rows.controls; let i = index; trackBy: trackByIndex" [formGroup]="row">
             <div>
-                <div><strong>{{ row.controls.studentName.value }}</strong></div>
-                <div class="muted">{{ row.controls.studentEmail.value }}</div>
+                <div><strong>{{ row.value.studentName }}</strong></div>
+                <div class="muted">{{ row.value.studentEmail }}</div>
             </div>
 
             <div class="num">
-                <input class="note-input" type="number" formControlName="valeur" step="0.25" min="0" max="20">
+                <input class="note-input" type="number" formControlName="cc" step="0.25" min="0" max="20">
+            </div>
+
+            <div class="num">
+                <input class="note-input" type="number" formControlName="examen" step="0.25" min="0" max="20">
+            </div>
+
+            <div class="num">
+                <input class="note-input" type="number" formControlName="moyenne" readonly>
             </div>
 
             <div>
@@ -57,8 +66,7 @@
 
     <ng-template #empty>
         <div class="aa-empty">
-            {{ loading() ? 'Loading…' : 'Select a group, set subject & date, then the sheet will load.' }}
+            {{ loading() ? 'Loading…' : 'Pick a group then choose a subject to load the sheet.' }}
         </div>
     </ng-template>
-
 </mat-card>
