@@ -1,0 +1,77 @@
+<mat-card class="sn-card">
+    <div class="sn-toolbar">
+        <h3 class="sn-title">My Grades</h3>
+
+        <div class="sn-actions">
+            <!-- filter select -->
+            <mat-form-field appearance="outline" class="sn-filter">
+                <mat-label>Filter by subject</mat-label>
+                <mat-select [(value)]="selectedMatiere">
+                    <mat-option [value]="''">All</mat-option>
+                    <mat-option *ngFor="let m of matieres" [value]="m">{{ m }}</mat-option>
+                </mat-select>
+            </mat-form-field>
+
+            <button mat-stroked-button class="sn-refresh" (click)="reload()">
+                <mat-icon>refresh</mat-icon>
+                Refresh
+            </button>
+        </div>
+    </div>
+
+    <div class="sn-table">
+        <div class="sn-thead sn-row">
+            <div class="sn-cell sn-col-matiere">Subject</div>
+            <div class="sn-cell sn-num">CC</div>
+            <div class="sn-cell sn-num">Exam</div>
+            <div class="sn-cell sn-num">Average</div>
+            <div class="sn-cell sn-col-weight">Weighting</div>
+            <div class="sn-cell sn-col-comment">Comment</div>
+        </div>
+
+        <ng-container *ngIf="rows?.length; else empty">
+            <div
+                    class="sn-row sn-body"
+                    *ngFor="let r of rows; trackBy: trackByMatiere"
+            >
+                <div class="sn-cell sn-col-matiere">
+                    <div class="sn-matiere">{{ r.matiere }}</div>
+                </div>
+
+                <div class="sn-cell sn-num">
+                    <span class="sn-chip sn-chip-cc" [ngClass]="gradeClass(r.cc)">{{ r.cc ?? '—' }}</span>
+                </div>
+
+                <div class="sn-cell sn-num">
+                    <span class="sn-chip sn-chip-exam" [ngClass]="gradeClass(r.examen)">{{ r.examen ?? '—' }}</span>
+                </div>
+
+                <div class="sn-cell sn-num">
+                    <span class="sn-chip sn-chip-avg" [ngClass]="gradeClass(r.moyenne, true)">
+                        {{ r.moyenne ?? '—' }}
+                    </span>
+                </div>
+
+                <div class="sn-cell sn-col-weight">
+                    <span class="sn-badge">CC {{ (r.weightCc * 100) | number:'1.0-0' }}%</span>
+                    <span class="sn-sep">/</span>
+                    <span class="sn-badge">Exam {{ (r.weightExam * 100) | number:'1.0-0' }}%</span>
+                </div>
+
+                <div class="sn-cell sn-col-comment">
+                    <span class="sn-comment" [title]="r.commentaire || ''">
+                        {{ r.commentaire || '—' }}
+                    </span>
+                </div>
+            </div>
+        </ng-container>
+    </div>
+
+    <ng-template #empty>
+        <div class="sn-empty">
+            <img src="assets/illustrations/empty-state.svg" alt="" />
+            <div>No grades yet</div>
+            <small>Please check back later or refresh the page.</small>
+        </div>
+    </ng-template>
+</mat-card>

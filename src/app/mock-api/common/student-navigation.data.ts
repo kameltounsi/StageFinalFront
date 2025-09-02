@@ -28,7 +28,7 @@ export const studentNavigation: Navigation = {
             title: 'My Grades',
             type: 'basic',
             icon: 'heroicons_outline:academic-cap',
-            link: '/student/grades'
+            link: '/student/notes'
         },
         {
             id: 'attendance',
