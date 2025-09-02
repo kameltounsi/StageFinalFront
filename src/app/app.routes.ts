@@ -194,7 +194,12 @@ export const appRoutes: Route[] = [
                     import('app/modules/trainer/weekly-schedule/weekly-schedule.routes')
                         .then(m => m.default)
             },
-
+            {
+                path: 'trainer/notes',
+                loadChildren: () =>
+                    import('./modules/trainer/notes/trainer-notes.routes')
+                        .then(m => m.default)
+            },
             {
                 path: 'trainer/manage-presence',
                 canActivate: [AuthGuard],
@@ -208,7 +213,12 @@ export const appRoutes: Route[] = [
                     import('app/modules/student/attendance/student-absence.routes')
                         .then(m => m.studentAbsenceRoutes)
             },
-
+            {
+                path: 'student/consult-planning',
+                loadChildren: () =>
+                    import('app/modules/student/consult-planning/consult-planning.routes')
+                        .then(m => m.consultPlanningRoutes)
+            },
             {
                 path: 'student/absences',
                 children: studentAbsenceRoutes

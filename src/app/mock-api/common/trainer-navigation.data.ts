@@ -10,7 +10,6 @@ export const trainerNavigation: Navigation = {
             icon: 'heroicons_outline:home',
             link: '/trainer/dashboard'
         },
-        // 👉 NEW
         {
             id: 'weekly-schedule',
             title: 'Weekly Schedule',
@@ -25,16 +24,20 @@ export const trainerNavigation: Navigation = {
             icon: 'heroicons_outline:book-open',
             link: '/trainer/my-courses'
         },
-        { id: 'attendance', title: 'Attendance', type: 'basic', icon: 'heroicons_outline:check-circle', link: '/trainer/manage-presence' }
-,
         {
-            id: 'grades',
-            title: 'Manage Grades',
+            id: 'attendance',
+            title: 'Attendance',
+            type: 'basic',
+            icon: 'heroicons_outline:check-circle',
+            link: '/trainer/manage-presence'
+        },
+        {
+            id: 'notes',
+            title: 'Manage Notes',
             type: 'basic',
             icon: 'heroicons_outline:pencil-square',
-            link: '/trainer/grades'
+            link: '/trainer/notes'   // 🔥 aligné avec trainer-notes.routes.ts
         }
-
     ],
     compact: [],
     futuristic: [],
