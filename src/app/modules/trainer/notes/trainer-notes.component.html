@@ -1,4 +1,3 @@
-<!-- src/app/modules/trainer/notes/trainer-notes.component.html -->
 <mat-card class="aa-card aa-centered">
     <div class="aa-filters" [formGroup]="form">
         <!-- Groupe -->
@@ -20,8 +19,8 @@
         <!-- Pondération -->
         <div class="weights">
             <label class="weights-title">Weights:</label>
-            <label><input type="radio" [formControl]="weightMode" value="40_60"> CC 40% / Exam 60%</label>
-            <label><input type="radio" [formControl]="weightMode" value="20_80"> CC 20% / Exam 80%</label>
+            <label><input type="radio" [formControl]="weightMode" value="40_60" /> CC 40% / Exam 60%</label>
+            <label><input type="radio" [formControl]="weightMode" value="20_80" /> CC 20% / Exam 80%</label>
         </div>
 
         <span class="spacer"></span>
@@ -47,19 +46,35 @@
             </div>
 
             <div class="num">
-                <input class="note-input" type="number" formControlName="cc" step="0.25" min="0" max="20">
+                <input
+                        class="note-input"
+                        type="number"
+                        formControlName="cc"
+                        step="0.25"
+                        min="0"
+                        max="20"
+                        (blur)="onNoteBlur(row, 'cc')"
+                />
             </div>
 
             <div class="num">
-                <input class="note-input" type="number" formControlName="examen" step="0.25" min="0" max="20">
+                <input
+                        class="note-input"
+                        type="number"
+                        formControlName="examen"
+                        step="0.25"
+                        min="0"
+                        max="20"
+                        (blur)="onNoteBlur(row, 'examen')"
+                />
             </div>
 
             <div class="num">
-                <input class="note-input" type="number" formControlName="moyenne" readonly>
+                <input class="note-input" type="number" formControlName="moyenne" readonly />
             </div>
 
             <div>
-                <input class="comment-input" type="text" placeholder="Optional…" formControlName="commentaire">
+                <input class="comment-input" type="text" placeholder="Optional…" formControlName="commentaire" />
             </div>
         </div>
     </div>

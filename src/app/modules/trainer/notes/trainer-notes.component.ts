@@ -1,4 +1,3 @@
-// src/app/modules/trainer/notes/trainer-notes.component.ts
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { FormArray, FormBuilder, FormControl, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
@@ -46,11 +45,11 @@ export class TrainerNotesComponent implements OnInit {
     private api = inject(TrainerNotesApi);
 
     groups: Groupe[] = [];
-    subjects: string[] = []; // ← sujets filtrés par spécialité
+    subjects: string[] = []; // filtered by specialty
     loading = signal(false);
     saving = signal(false);
 
-    // radio: '40_60' ou '20_80'
+    // '40_60' or '20_80'
     weightMode = this.fb.control<'40_60' | '20_80'>('40_60', { nonNullable: true });
 
     form = this.fb.group({
@@ -59,7 +58,7 @@ export class TrainerNotesComponent implements OnInit {
         rows: this.fb.array<FormGroup<GradeRow>>([]),
     });
 
-    // Mapping Spécialité -> Matières autorisées
+    // Mapping Speciality -> Allowed subjects
     readonly MATIERES_PAR_SPECIALITE: Record<string, string[]> = {
         'Cybersecurity & Ethical Hacking': [
             'Réseaux & Protocoles Sécurisés',
@@ -108,6 +107,7 @@ export class TrainerNotesComponent implements OnInit {
 
     ngOnInit(): void {
         this.fetchGroupsForTrainer();
+        // recompute all averages when weight mode changes
         this.weightMode.valueChanges.subscribe(() => this.recomputeAllAverages());
     }
 
@@ -129,11 +129,10 @@ export class TrainerNotesComponent implements OnInit {
 
         if (!groupeId) return;
 
-        const g = this.groups.find(x => x.id === groupeId);
+        const g = this.groups.find((x) => x.id === groupeId);
         const spec = g?.specialite ?? '';
         this.subjects = this.MATIERES_PAR_SPECIALITE[spec] ?? [];
 
-        // activer le select "matiere" seulement si on a des sujets
         if (this.subjects.length) {
             this.form.controls.matiere.enable();
         }
@@ -158,18 +157,55 @@ export class TrainerNotesComponent implements OnInit {
         return +(ccS * wCc + exS * wExam).toFixed(2);
     }
 
+    /** Ensures 0..20, clamps if out of range and shows a SweetAlert */
+    private enforceBoundsWithAlert(label: 'CC' | 'Exam', value: number | null | undefined): number | null {
+        if (value == null || Number.isNaN(value as any)) return null;
+
+        if (value < 0 || value > 20) {
+            const clamped = Math.max(0, Math.min(20, value));
+            Swal.fire({
+                icon: 'warning',
+                title: 'Value out of bounds',
+                text: `${label} must be between 0 and 20. The value has been adjusted to ${clamped}.`,
+                confirmButtonText: 'OK',
+            });
+            return clamped;
+        }
+        return value;
+    }
+
+    /** Called on blur of CC/Exam: clamp + recompute average */
+    onNoteBlur(row: FormGroup<GradeRow>, key: 'cc' | 'examen') {
+        const ctrl = row.controls[key];
+        const fixed = this.enforceBoundsWithAlert(key === 'cc' ? 'CC' : 'Exam', ctrl.value);
+        if (fixed !== ctrl.value) {
+            ctrl.setValue(fixed, { emitEvent: false });
+        }
+        // Immediate recompute
+        row.controls.moyenne.setValue(this.computeAverage(row.controls.cc.value, row.controls.examen.value), {
+            emitEvent: false,
+        });
+    }
+
+    /** Auto-recompute (no alert) while typing */
     private bindRowRecalc(row: FormGroup<GradeRow>): void {
         row.controls.cc.valueChanges.subscribe(() => {
-            row.controls.moyenne.setValue(this.computeAverage(row.controls.cc.value, row.controls.examen.value), { emitEvent: false });
+            row.controls.moyenne.setValue(this.computeAverage(row.controls.cc.value, row.controls.examen.value), {
+                emitEvent: false,
+            });
         });
         row.controls.examen.valueChanges.subscribe(() => {
-            row.controls.moyenne.setValue(this.computeAverage(row.controls.cc.value, row.controls.examen.value), { emitEvent: false });
+            row.controls.moyenne.setValue(this.computeAverage(row.controls.cc.value, row.controls.examen.value), {
+                emitEvent: false,
+            });
         });
     }
 
     private recomputeAllAverages(): void {
-        this.rows.controls.forEach(r => {
-            r.controls.moyenne.setValue(this.computeAverage(r.controls.cc.value, r.controls.examen.value), { emitEvent: false });
+        this.rows.controls.forEach((r) => {
+            r.controls.moyenne.setValue(this.computeAverage(r.controls.cc.value, r.controls.examen.value), {
+                emitEvent: false,
+            });
         });
     }
 
@@ -185,7 +221,7 @@ export class TrainerNotesComponent implements OnInit {
 
         this.api.loadSheet(groupeId, matiere).subscribe({
             next: (rows: TrainerNoteRow[]) => {
-                (rows || []).forEach(r => {
+                (rows || []).forEach((r) => {
                     const row = this.fb.group<GradeRow>({
                         studentId: this.fb.control(r.studentId, { nonNullable: true }),
                         studentName: this.fb.control(r.studentName, { nonNullable: true }),
@@ -200,7 +236,9 @@ export class TrainerNotesComponent implements OnInit {
                 });
                 this.recomputeAllAverages();
             },
-            error: () => { /* silencieux */ },
+            error: () => {
+                /* silent */
+            },
             complete: () => this.loading.set(false),
         });
     }
@@ -216,7 +254,7 @@ export class TrainerNotesComponent implements OnInit {
             matiere: this.form.controls.matiere.value!,
             weightCc: wCc,
             weightExam: wExam,
-            items: this.rows.getRawValue().map(r => ({
+            items: this.rows.getRawValue().map((r) => ({
                 studentId: r.studentId,
                 cc: r.cc,
                 examen: r.examen,
@@ -225,8 +263,8 @@ export class TrainerNotesComponent implements OnInit {
         };
 
         this.api.saveSheet(body).subscribe({
-            next: () => Swal.fire('Succès', 'Les notes ont été enregistrées.', 'success'),
-            error: () => Swal.fire('Échec', "L'enregistrement des notes a échoué.", 'error'),
+            next: () => Swal.fire('Success', 'Grades have been saved.', 'success'),
+            error: () => Swal.fire('Error', 'Saving grades failed.', 'error'),
             complete: () => this.saving.set(false),
         });
     }
