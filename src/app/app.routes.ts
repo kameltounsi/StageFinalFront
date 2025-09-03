@@ -201,6 +201,12 @@ export const appRoutes: Route[] = [
                         .then(m => m.default)
             },
             {
+                path: 'trainer/courses',
+                loadChildren: () =>
+                    import('./modules/trainer/courses/trainer-courses.routes')
+                        .then(m => m.trainerCoursesRoutes),
+            },
+            {
                 path: 'trainer/manage-presence',
                 canActivate: [AuthGuard],
                 // canMatch: [AuthGuard],   // si lazy module

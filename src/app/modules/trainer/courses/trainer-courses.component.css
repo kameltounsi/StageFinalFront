@@ -1,0 +1,26 @@
+/* src/app/modules/trainer/courses/trainer-courses.component.css */
+.tc-card{ max-width:1100px; margin:24px auto; padding:16px; border-radius:14px; }
+.tc-toolbar{ display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+.tc-title{ margin:0; font-weight:700; }
+.tc-filter{ min-width: 220px; }
+.spacer{ flex:1 1 auto; }
+
+.tc-table table{ width:100%; border:1px solid #e6eaf2; border-radius:12px; overflow:hidden; }
+th.mat-header-cell{ background:#f6f8fb; font-weight:700; }
+td.mat-cell, th.mat-header-cell{ padding:12px; }
+.right{ text-align:right; }
+
+.tc-titlecell{ display:flex; align-items:center; gap:8px; min-width:0; }
+.tc-titlecell .pdf{ color:#c62828; }
+.tc-titlecell .name{ white-space:nowrap; overflow:hidden; text-overflow:ellipsis; display:block; }
+
+.tc-empty{
+    display:flex; flex-direction:column; align-items:center; gap:8px;
+    padding:28px 14px; color:#6b7a90;
+}
+.tc-empty img{ width:120px; opacity:.9; margin-bottom:6px; }
+
+@media (max-width: 720px){
+    .right{ text-align:left; }
+    td.mat-cell.right > button{ width:100%; margin-bottom:6px; }
+}

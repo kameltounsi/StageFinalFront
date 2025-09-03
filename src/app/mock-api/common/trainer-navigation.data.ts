@@ -22,7 +22,7 @@ export const trainerNavigation: Navigation = {
             title: 'My Courses',
             type: 'basic',
             icon: 'heroicons_outline:book-open',
-            link: '/trainer/my-courses'
+            link: '/trainer/courses'
         },
         {
             id: 'attendance',
@@ -37,7 +37,8 @@ export const trainerNavigation: Navigation = {
             type: 'basic',
             icon: 'heroicons_outline:pencil-square',
             link: '/trainer/notes'   // 🔥 aligné avec trainer-notes.routes.ts
-        }
+        },
+
     ],
     compact: [],
     futuristic: [],

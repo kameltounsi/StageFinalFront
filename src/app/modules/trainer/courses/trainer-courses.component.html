@@ -1,0 +1,86 @@
+<!-- src/app/modules/trainer/courses/trainer-courses.component.html -->
+<mat-card class="tc-card">
+    <div class="tc-toolbar">
+        <h3 class="tc-title">My Courses (PDF)</h3>
+
+        <mat-form-field appearance="outline" class="tc-filter">
+            <mat-label>Group</mat-label>
+            <mat-select [(value)]="selectedGroup" (selectionChange)="onGroupChange()">
+                <mat-option *ngFor="let g of groups" [value]="g.id">{{ g.nom }}</mat-option>
+            </mat-select>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="tc-filter">
+            <mat-label>Subject</mat-label>
+            <mat-select [(value)]="selectedSubject" [disabled]="!subjects.length">
+                <mat-option *ngFor="let s of subjects" [value]="s">{{ s }}</mat-option>
+            </mat-select>
+        </mat-form-field>
+
+        <span class="spacer"></span>
+
+        <button mat-stroked-button (click)="reload()">
+            <mat-icon>refresh</mat-icon>&nbsp;Refresh
+        </button>
+        <button mat-flat-button color="primary" (click)="pickAndUpload()">
+            <mat-icon>upload_file</mat-icon>&nbsp;Upload PDF
+        </button>
+    </div>
+
+    <div class="tc-table" *ngIf="rows?.length; else empty">
+        <table mat-table [dataSource]="rows" class="mat-elevation-z0">
+            <ng-container matColumnDef="title">
+                <th mat-header-cell *matHeaderCellDef> Title </th>
+                <td mat-cell *matCellDef="let r">
+                    <div class="tc-titlecell">
+                        <mat-icon class="pdf">picture_as_pdf</mat-icon>
+                        <span class="name" [title]="r.title">{{ r.title }}</span>
+                    </div>
+                </td>
+            </ng-container>
+
+            <ng-container matColumnDef="group">
+                <th mat-header-cell *matHeaderCellDef> Group </th>
+                <td mat-cell *matCellDef="let r">{{ r.groupeName }}</td>
+            </ng-container>
+
+            <ng-container matColumnDef="subject">
+                <th mat-header-cell *matHeaderCellDef> Subject </th>
+                <td mat-cell *matCellDef="let r">{{ r.subject }}</td>
+            </ng-container>
+
+            <ng-container matColumnDef="size">
+                <th mat-header-cell *matHeaderCellDef> Size </th>
+                <td mat-cell *matCellDef="let r">{{ formatSize(r.sizeBytes) }}</td>
+            </ng-container>
+
+            <ng-container matColumnDef="createdAt">
+                <th mat-header-cell *matHeaderCellDef> Uploaded </th>
+                <td mat-cell *matCellDef="let r">{{ r.createdAt | date:'medium' }}</td>
+            </ng-container>
+
+            <ng-container matColumnDef="actions">
+                <th mat-header-cell *matHeaderCellDef class="right"> Actions </th>
+                <td mat-cell *matCellDef="let r" class="right">
+                    <button mat-stroked-button (click)="download(r)">
+                        <mat-icon>download</mat-icon>&nbsp;Download
+                    </button>
+                    <button mat-stroked-button color="warn" (click)="delete(r)">
+                        <mat-icon>delete</mat-icon>&nbsp;Delete
+                    </button>
+                </td>
+            </ng-container>
+
+            <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+            <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+        </table>
+    </div>
+
+    <ng-template #empty>
+        <div class="tc-empty">
+            <img src="assets/illustrations/empty-state.svg" alt="" />
+            <div>No course yet</div>
+            <small>Select a group & subject, then upload a PDF.</small>
+        </div>
+    </ng-template>
+</mat-card>
