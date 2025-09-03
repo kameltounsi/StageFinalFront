@@ -6,8 +6,10 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatSelectModule } from '@angular/material/select';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { StudentNotesApi, StudentNoteDTO, NoteClaimDTO } from './student-notes.api';
 import Swal from 'sweetalert2';
+import { StudentClaimDetailsDialogComponent } from './student-claim-details-dialog.component';
 
 @Component({
     selector: 'app-student-notes',
@@ -21,10 +23,12 @@ import Swal from 'sweetalert2';
         MatSelectModule,
         MatButtonModule,
         MatIconModule,
+        MatDialogModule
     ],
 })
 export class StudentNotesComponent implements OnInit {
     private api = inject(StudentNotesApi);
+    private dialog = inject(MatDialog);
 
     loading = signal(false);
 
@@ -32,7 +36,7 @@ export class StudentNotesComponent implements OnInit {
     matieres: string[] = [];
     selectedMatiere: string = '';
 
-    /** Last claims (for showing “Claim sent” or status badge) */
+    /** Dernière réclamation (la plus récente) par matière */
     claims: Record<string, NoteClaimDTO | undefined> = {};
 
     ngOnInit(): void {
@@ -44,19 +48,21 @@ export class StudentNotesComponent implements OnInit {
         this.api.getMyNotes().subscribe({
             next: (rows) => {
                 this.rows = Array.isArray(rows) ? rows : [];
-                this.matieres = Array.from(new Set(this.rows.map(r => r.matiere))).sort((a, b) => a.localeCompare(b));
+                this.matieres = Array.from(new Set(this.rows.map(r => (r.matiere || '').trim())))
+                    .sort((a, b) => a.localeCompare(b));
                 if (this.selectedMatiere && !this.matieres.includes(this.selectedMatiere)) {
                     this.selectedMatiere = '';
                 }
-                // fetch claims after notes so we can map by subject
+
+                // Charger les réclamations
                 this.api.getMyClaims().subscribe({
                     next: (cs) => {
                         this.claims = {};
                         (cs || []).forEach(c => {
-                            // keep the most recent per subject
-                            const prev = this.claims[c.matiere];
-                            if (!prev || new Date(c.createdAt) > new Date(prev.createdAt)) {
-                                this.claims[c.matiere] = c;
+                            const key = (c.matiere || '').trim();
+                            const prev = this.claims[key];
+                            if (!prev || new Date(c.updatedAt) > new Date(prev.updatedAt)) {
+                                this.claims[key] = c;
                             }
                         });
                     },
@@ -68,9 +74,9 @@ export class StudentNotesComponent implements OnInit {
         });
     }
 
-    trackByMatiere = (_: number, r: StudentNoteDTO) => r.matiere;
+    trackByMatiere = (_: number, r: StudentNoteDTO) => (r.matiere || '').trim();
 
-    gradeClass(v: number | null | undefined, _isAverage = false): string {
+    gradeClass(v: number | null | undefined): string {
         if (v == null) return '';
         if (v < 10)  return 'sn-grade-low';
         if (v < 14)  return 'sn-grade-mid';
@@ -79,10 +85,37 @@ export class StudentNotesComponent implements OnInit {
 
     get displayedRows(): StudentNoteDTO[] {
         if (!this.selectedMatiere) return this.rows;
-        return this.rows.filter(r => r.matiere === this.selectedMatiere);
+        return this.rows.filter(r => (r.matiere || '').trim() === this.selectedMatiere);
     }
 
-    /** Open a SweetAlert form to submit a note review request */
+    claimBadgeText(matiere: string): string | null {
+        const c = this.claims[(matiere || '').trim()];
+        if (!c) return null;
+        if (c.status === 'PENDING') return 'Claim pending';
+        if (c.status === 'APPROVED') return 'Claim approved';
+        if (c.status === 'REJECTED') return 'Claim rejected';
+        return null;
+    }
+
+    isClaimPending(matiere: string): boolean {
+        const c = this.claims[(matiere || '').trim()];
+        return !!c && c.status === 'PENDING';
+    }
+
+    hasAnyClaim(matiere: string): boolean {
+        return !!this.claims[(matiere || '').trim()];
+    }
+
+    openClaimDetails(matiere: string) {
+        const c = this.claims[(matiere || '').trim()];
+        if (!c) return;
+        this.dialog.open(StudentClaimDetailsDialogComponent, {
+            width: '560px',
+            data: { claim: c }
+        });
+    }
+
+    /** Ouvre un formulaire SweetAlert pour soumettre une réclamation */
     async requestReview(r: StudentNoteDTO) {
         const { value: msg } = await Swal.fire({
             title: `Request review — ${r.matiere}`,
@@ -105,7 +138,7 @@ export class StudentNotesComponent implements OnInit {
 
         try {
             await this.api.submitClaim({
-                matiere: r.matiere,
+                matiere: (r.matiere || '').trim(),
                 message: msg.trim(),
             }).toPromise();
 
@@ -114,19 +147,5 @@ export class StudentNotesComponent implements OnInit {
         } catch {
             Swal.fire('Error', 'Failed to submit your request. Please try again.', 'error');
         }
-    }
-
-    claimBadgeText(matiere: string): string | null {
-        const c = this.claims[matiere];
-        if (!c) return null;
-        if (c.status === 'PENDING') return 'Claim pending';
-        if (c.status === 'APPROVED') return 'Claim approved';
-        if (c.status === 'REJECTED') return 'Claim rejected';
-        return null;
-    }
-
-    isClaimPending(matiere: string): boolean {
-        const c = this.claims[matiere];
-        return !!c && c.status === 'PENDING';
     }
 }

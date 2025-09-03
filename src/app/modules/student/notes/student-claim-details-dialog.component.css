@@ -1,0 +1,26 @@
+.scd-status{ display:flex; align-items:center; gap:10px; margin-bottom:8px; }
+.chip{
+    padding:4px 10px; border-radius:999px; font-weight:800; font-size:.85rem;
+    border:1px solid transparent;
+}
+.chip.pending{  background:#fff8e1; color:#8a5b00; border-color:#ffe7b0; }
+.chip.approved{ background:#e9fbef; color:#12743d; border-color:#c3f2d4; }
+.chip.rejected{ background:#fff1f0; color:#b01515; border-color:#ffd4d0; }
+.muted{ color:#6b7a90; }
+
+.scd-block{ margin:12px 0; }
+.title{ font-weight:800; color:#0f172a; margin-bottom:6px; }
+.box{
+    border:1px solid #e5e7eb; background:#f9fafb; border-radius:8px;
+    padding:10px 12px; min-height:44px; white-space:pre-wrap;
+}
+.box--empty{ color:#6b7280; font-style:italic; }
+
+.scd-grid{ display:grid; grid-template-columns: 1fr 1fr; gap:12px; }
+.value{
+    border:1px solid #e5e7eb; background:#fff; border-radius:8px;
+    padding:8px 12px; min-height:44px;
+}
+@media (max-width: 520px){
+    .scd-grid{ grid-template-columns: 1fr; }
+}

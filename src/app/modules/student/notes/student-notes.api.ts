@@ -44,12 +44,10 @@ export class StudentNotesApi {
         return this.http.get<StudentNoteDTO[]>('/api/student/notes');
     }
 
-    // new
     getMyClaims() {
         return this.http.get<NoteClaimDTO[]>('/api/student/notes/claims');
     }
 
-    // new
     submitClaim(payload: NoteClaimRequest) {
         return this.http.post<NoteClaimDTO>('/api/student/notes/claims', payload);
     }

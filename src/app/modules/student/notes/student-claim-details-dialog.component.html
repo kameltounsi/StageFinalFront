@@ -1,0 +1,45 @@
+<h2 mat-dialog-title style="margin:0; display:flex; align-items:center; gap:8px;">
+    <mat-icon>assignment</mat-icon>
+    Claim — {{ data.claim.matiere }}
+</h2>
+
+<div mat-dialog-content>
+    <div class="scd-status">
+    <span class="chip"
+          [ngClass]="{
+            'pending': data.claim.status==='PENDING',
+            'approved': data.claim.status==='APPROVED',
+            'rejected': data.claim.status==='REJECTED'
+          }">
+      {{ data.claim.status }}
+    </span>
+        <small class="muted">Updated: {{ data.claim.updatedAt | date:'medium' }}</small>
+    </div>
+
+    <div class="scd-block">
+        <div class="title">Your message</div>
+        <div class="box">{{ data.claim.message || '—' }}</div>
+    </div>
+
+    <div class="scd-grid">
+        <div class="scd-block">
+            <div class="title">Proposed CC</div>
+            <div class="value">{{ data.claim.proposedCc ?? '—' }}</div>
+        </div>
+        <div class="scd-block">
+            <div class="title">Proposed Exam</div>
+            <div class="value">{{ data.claim.proposedExamen ?? '—' }}</div>
+        </div>
+    </div>
+
+    <div class="scd-block">
+        <div class="title">Tutor response</div>
+        <div class="box" [class.box--empty]="!data.claim.tutorReply">
+            {{ data.claim.tutorReply || 'No response yet.' }}
+        </div>
+    </div>
+</div>
+
+<div mat-dialog-actions align="end">
+    <button mat-flat-button color="primary" (click)="ref.close()">Close</button>
+</div>

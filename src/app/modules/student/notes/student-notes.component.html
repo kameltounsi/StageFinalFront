@@ -35,7 +35,19 @@
                 <div class="sn-cell sn-col-matiere">
                     <div class="sn-matiere">
                         {{ r.matiere }}
-                        <span *ngIf="claimBadgeText(r.matiere) as badge" class="sn-claim-badge">{{ badge }}</span>
+                    </div>
+
+                    <!-- Badge + bouton view (si une réclamation existe) -->
+                    <div class="sn-claim-line" *ngIf="claims[(r.matiere || '').trim()] as c">
+            <span class="sn-claim-badge"
+                  [ngClass]="{
+                    'sn-claim-pending': c.status === 'PENDING',
+                    'sn-claim-approved': c.status === 'APPROVED',
+                    'sn-claim-rejected': c.status === 'REJECTED'
+                  }">
+              {{ c.status === 'PENDING' ? 'Claim pending' : (c.status === 'APPROVED' ? 'Claim approved' : 'Claim rejected') }}
+            </span>
+
                     </div>
                 </div>
 
@@ -48,7 +60,7 @@
                 </div>
 
                 <div class="sn-cell sn-num">
-          <span class="sn-chip sn-chip-avg" [ngClass]="gradeClass(r.moyenne, true)">
+          <span class="sn-chip sn-chip-avg" [ngClass]="gradeClass(r.moyenne)">
             {{ r.moyenne ?? '—' }}
           </span>
                 </div>
@@ -66,9 +78,17 @@
                 </div>
 
                 <div class="sn-cell sn-col-actions">
-                    <button mat-stroked-button (click)="requestReview(r)">
+                    <button mat-stroked-button (click)="requestReview(r)" [disabled]="isClaimPending(r.matiere)">
                         <mat-icon>flag</mat-icon>
                         Request review
+                    </button>
+
+                    <!-- Bouton view doublé dans actions pour l’accessibilité -->
+                    <button *ngIf="hasAnyClaim(r.matiere)"
+                            mat-stroked-button color="primary"
+                            (click)="openClaimDetails(r.matiere)">
+                        <mat-icon>visibility</mat-icon>
+                        {{ claims[(r.matiere || '').trim()]?.status === 'PENDING' ? 'View claim' : 'View response' }}
                     </button>
                 </div>
             </div>
