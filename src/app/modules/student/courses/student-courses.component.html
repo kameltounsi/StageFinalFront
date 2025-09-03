@@ -1,0 +1,93 @@
+<div class="sc-page">
+    <!-- Hero / breadcrumb -->
+    <div class="sc-hero" [style.--accent]="accentFor(subject)">
+        <a class="crumb" routerLink="/student/courses">
+            <mat-icon>arrow_back</mat-icon>
+            <span>All classes</span>
+        </a>
+
+        <div class="hero-center">
+            <div class="subject" *ngIf="subject as s">{{ prettySubject(s) }}</div>
+            <div class="subtitle">All PDFs uploaded to your group, ordered by date.</div>
+        </div>
+
+        <button class="btn refresh" (click)="reload()" [disabled]="loading">
+            <mat-icon>refresh</mat-icon>
+            <span>Refresh</span>
+        </button>
+    </div>
+
+    <!-- Skeletons -->
+    <div class="sc-list" *ngIf="loading">
+        <div class="skel"></div>
+        <div class="skel"></div>
+        <div class="skel"></div>
+    </div>
+
+    <!-- Content -->
+    <ng-container *ngIf="!loading">
+        <div class="sc-empty" *ngIf="!rows?.length">
+            <img src="assets/illustrations/empty-state.svg" alt="" />
+            <h4>No files yet</h4>
+            <p>When your trainer uploads a course for this subject, it will show up here automatically.</p>
+            <button class="btn ghost" routerLink="/student/courses">
+                <mat-icon>home</mat-icon>
+                <span>Back to classes</span>
+            </button>
+        </div>
+
+        <div class="sc-list" *ngIf="rows?.length">
+            <div
+                    class="sc-card"
+                    *ngFor="let r of rows; trackBy: trackById"
+                    [style.--accent]="accentFor(r.subject)"
+                    tabindex="0"
+                    (keydown.enter)="download(r)"
+            >
+                <div class="left">
+                    <div class="file-icon">
+                        <mat-icon>picture_as_pdf</mat-icon>
+                    </div>
+
+                    <div class="meta">
+                        <div class="title" [title]="r.title">{{ r.title }}</div>
+
+                        <div class="chips">
+              <span class="chip group">
+                <mat-icon>groups</mat-icon>
+                  {{ r.groupeName }}
+              </span>
+
+                            <span class="chip subject">
+                <mat-icon>book</mat-icon>
+                                {{ prettySubject(r.subject) }}
+              </span>
+
+                            <span class="chip light">
+                <mat-icon>schedule</mat-icon>
+                                {{ r.createdAt | date: 'medium' }}
+              </span>
+
+                            <span class="chip light">
+                <mat-icon>data_usage</mat-icon>
+                                {{ formatSize(r.sizeBytes) }}
+              </span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="right">
+                    <button
+                            class="btn primary"
+                            (click)="download(r)"
+                            [disabled]="downloadingId === r.id"
+                    >
+                        <mat-icon *ngIf="downloadingId !== r.id">download</mat-icon>
+                        <mat-icon *ngIf="downloadingId === r.id">hourglass_empty</mat-icon>
+                        <span>{{ downloadingId === r.id ? 'Preparing…' : 'Download' }}</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </ng-container>
+</div>

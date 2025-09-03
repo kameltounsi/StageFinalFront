@@ -14,7 +14,7 @@ export const studentNavigation: Navigation = {
             title: 'My Courses',
             type: 'basic',
             icon: 'heroicons_outline:book-open',
-            link: '/student/my-courses'
+            link: '/student/courses'
         },
         {
             id: 'my-schedule',

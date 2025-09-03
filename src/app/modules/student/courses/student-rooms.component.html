@@ -1,0 +1,91 @@
+<div class="gc-container">
+    <header class="gc-header gc-header--sticky">
+        <div class="gc-titlebox">
+            <h1>My Classes</h1>
+            <p>Pick a subject to view all course PDFs uploaded for your group.</p>
+        </div>
+
+        <div class="gc-actions">
+            <div class="density" role="group" aria-label="Density">
+                <button
+                        type="button"
+                        class="density-btn"
+                        [class.active]="density==='comfortable'"
+                        (click)="setDensity('comfortable')"
+                        [attr.aria-pressed]="density==='comfortable'"
+                        title="Comfortable">
+                    <mat-icon>view_module</mat-icon>
+                </button>
+                <button
+                        type="button"
+                        class="density-btn"
+                        [class.active]="density==='compact'"
+                        (click)="setDensity('compact')"
+                        [attr.aria-pressed]="density==='compact'"
+                        title="Compact">
+                    <mat-icon>view_comfy_alt</mat-icon>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <section class="gc-grid" *ngIf="subjects?.length; else empty">
+        <article
+                class="gc-card gc-card--lg"
+                *ngFor="let raw of subjects; index as i; trackBy: trackByIndex"
+                [style.--accent]="accentFor(raw)"
+                [style.--accent-2]="accentFor(raw, true)"
+        >
+            <!-- Cover agrandie -->
+            <a class="gc-cover" [routerLink]="['/student/courses', raw]" [title]="titleCase(raw)">
+                <div class="gc-cover-top">
+                    <span class="gc-kebab" aria-hidden="true">•••</span>
+                </div>
+
+                <div class="gc-cover-bottom">
+                    <div class="gc-subject">
+                        <h3 class="gc-title">{{ titleCase(raw) }}</h3>
+                        <div class="gc-chipline">
+              <span class="gc-chip">
+                <mat-icon>apartment</mat-icon><span>Your group</span>
+              </span>
+                        </div>
+                    </div>
+
+                    <div class="gc-teacher">
+                        <ng-container *ngIf="teacherAvatar(raw); else initialsAvatar">
+                            <img class="gc-avatar-img" [src]="teacherAvatar(raw)!" alt="">
+                        </ng-container>
+                        <ng-template #initialsAvatar>
+                            <div class="gc-avatar-fallback">{{ initials(teacherName(raw)) }}</div>
+                        </ng-template>
+                        <div class="gc-teacher-name">{{ teacherName(raw) }}</div>
+                    </div>
+                </div>
+            </a>
+
+            <!-- Body spacer -->
+            <div class="gc-body"></div>
+
+            <footer class="gc-footer">
+                <a [routerLink]="['/student/courses', raw]" class="gc-action" matRipple>
+                    <mat-icon>forum</mat-icon><span>Stream</span>
+                </a>
+                <a [routerLink]="['/student/courses', raw]" class="gc-action" matRipple>
+                    <mat-icon>folder_open</mat-icon><span>Classwork</span>
+                </a>
+                <a [routerLink]="['/student/courses', raw]" class="gc-action" matRipple>
+                    <mat-icon>group</mat-icon><span>People</span>
+                </a>
+            </footer>
+        </article>
+    </section>
+
+    <ng-template #empty>
+        <div class="gc-empty">
+            <img src="assets/illustrations/empty-state.svg" alt="">
+            <h4>No classes yet</h4>
+            <p>Once your trainer assigns materials to your group, they’ll appear here.</p>
+        </div>
+    </ng-template>
+</div>

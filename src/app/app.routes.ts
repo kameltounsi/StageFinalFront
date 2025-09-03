@@ -234,6 +234,12 @@ export const appRoutes: Route[] = [
                 loadChildren: () =>
                     import('app/modules/student/notes/student-notes.routes'),
             },
+            {
+                path: 'student/courses',
+                loadChildren: () =>
+                    import('app/modules/student/courses/student-courses.routes')
+                        .then(m => m.default),
+            },
             // Catch-all
             { path: '404-not-found', pathMatch: 'full', loadChildren: () => import('app/modules/admin/pages/error/error-404/error-404.routes') },
             { path: '**', redirectTo: '404-not-found' }

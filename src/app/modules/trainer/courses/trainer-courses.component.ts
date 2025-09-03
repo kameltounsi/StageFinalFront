@@ -114,7 +114,7 @@ export class TrainerCoursesComponent implements OnInit {
                 next: () => {
                     Swal.fire('Deleted', 'Course removed.', 'success');
                     this.reload();
-                },
+                    },
                 error: () => Swal.fire('Error', 'Delete failed.', 'error'),
             });
         });
