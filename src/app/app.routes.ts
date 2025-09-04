@@ -4,6 +4,7 @@ import { AuthGuard } from 'app/core/auth/guards/auth.guard';
 import { NoAuthGuard } from 'app/core/auth/guards/noAuth.guard';
 import { LayoutComponent } from 'app/layout/layout.component';
 import {studentAbsenceRoutes} from "./modules/student/attendance/student-absence.routes";
+import adminCoursesRoutes from "./modules/admin/courses/admin-courses.routes";
 
 export const appRoutes: Route[] = [
     { path: '', pathMatch: 'full', redirectTo: 'dashboards/project' },
@@ -233,6 +234,11 @@ export const appRoutes: Route[] = [
                 path: 'student/notes',
                 loadChildren: () =>
                     import('app/modules/student/notes/student-notes.routes'),
+            },
+            // ==== Admin ====
+            {
+                path: 'admin/courses',
+                children: adminCoursesRoutes,
             },
             {
                 path: 'student/courses',

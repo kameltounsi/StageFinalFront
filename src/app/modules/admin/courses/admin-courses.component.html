@@ -1,0 +1,119 @@
+<div class="ac-page">
+    <div class="ac-header glass">
+        <a routerLink="/admin" class="ac-back">
+            <mat-icon>arrow_back</mat-icon><span>Back to Admin</span>
+        </a>
+
+        <div class="ac-title">
+            <span class="ac-pill">All courses</span>
+            <h2>Courses (Admin)</h2>
+        </div>
+
+        <div class="ac-filters">
+            <div class="ac-row">
+                <!-- Spécialité -->
+                <select [(ngModel)]="specialite" (change)="onSpecialiteChanged()" class="ac-select">
+                    <option [ngValue]="null">All specialties</option>
+                    <option *ngFor="let sp of meta.specialites" [ngValue]="sp">{{ sp }}</option>
+                </select>
+
+                <!-- Groupes -->
+                <select [(ngModel)]="groupId" (change)="reload()" class="ac-select">
+                    <option [ngValue]="null">All groups</option>
+                    <option *ngFor="let g of filteredGroups" [ngValue]="g.id">
+                        {{ g.nom }}
+                    </option>
+                </select>
+
+                <!-- Matières -->
+                <select [(ngModel)]="subject" (change)="reload()" class="ac-select">
+                    <option [ngValue]="null">All subjects</option>
+                    <option *ngFor="let s of meta.subjects" [ngValue]="s">{{ s }}</option>
+                </select>
+
+                <!-- Trainers -->
+                <select [(ngModel)]="trainerId" (change)="reload()" class="ac-select">
+                    <option [ngValue]="null">All trainers</option>
+                    <option *ngFor="let t of filteredTrainers" [ngValue]="t.id">
+                        {{ t.fullName || t.email }}
+                    </option>
+                </select>
+
+                <div class="ac-search">
+                    <mat-icon>search</mat-icon>
+                    <input
+                            [(ngModel)]="q"
+                            (keyup.enter)="reload()"
+                            (input)="onSearchInput()"
+                            type="text"
+                            placeholder="Search by title…"
+                    />
+                </div>
+
+                <button class="ac-btn soft" (click)="clearFilters()">
+                    <mat-icon>close</mat-icon><span>Clear</span>
+                </button>
+
+                <button class="ac-btn" (click)="reload()">
+                    <mat-icon>refresh</mat-icon><span>Refresh</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <ng-container *ngIf="!loading(); else loadingState">
+        <div class="ac-cards" *ngIf="rows?.length; else empty">
+            <div class="ac-card file" *ngFor="let r of rows" tabindex="0" (keydown.enter)="download(r)">
+                <div class="file-left">
+                    <div class="file-icon"><mat-icon>picture_as_pdf</mat-icon></div>
+                    <div class="file-meta">
+                        <div class="file-name" [title]="r.title">{{ r.title }}</div>
+                        <div class="file-chips">
+                            <span class="chip strong">{{ r.groupeName }}</span>
+                            <span class="chip brand">{{ r.subject }}</span>
+                            <span class="chip light">{{ r.createdAt | date: 'medium' }}</span>
+                            <span class="chip light">{{ formatSize(r.sizeBytes) }}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="file-right">
+                    <div class="owner" *ngIf="r.trainerEmail || r.trainerId">
+                        <div class="avatar" [attr.aria-label]="r.trainerEmail">
+                            {{ initialOf(r.trainerEmail) }}
+                        </div>
+                        <div class="owner-meta">
+                            <div class="owner-label">Trainer</div>
+                            <div class="owner-value">{{ r.trainerEmail || ('#' + r.trainerId) }}</div>
+                        </div>
+                    </div>
+
+                    <div class="actions">
+                        <button class="ac-btn soft" (click)="download(r)">
+                            <mat-icon>download</mat-icon><span>Download</span>
+                        </button>
+                        <button class="ac-btn danger soft" (click)="remove(r)">
+                            <mat-icon>delete</mat-icon><span>Delete</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </ng-container>
+
+    <ng-template #empty>
+        <div class="ac-empty">
+            <img src="assets/illustrations/empty-state.svg" alt="" />
+            <h4>No files</h4>
+            <p>Try adjusting filters (specialty, group, subject, trainer) or search by title.</p>
+        </div>
+    </ng-template>
+
+    <ng-template #loadingState>
+        <div class="ac-cards">
+            <div class="file-skel"></div>
+            <div class="file-skel"></div>
+            <div class="file-skel"></div>
+        </div>
+    </ng-template>
+</div>
