@@ -43,7 +43,7 @@ export const adminNavigation: Navigation = {
             title: 'Grades',
             type: 'basic',
             icon: 'heroicons_outline:academic-cap',
-            link: '/admin/grades'
+            link: '/admin/results'
         },
         {
             id: 'admin.courses',

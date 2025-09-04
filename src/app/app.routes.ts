@@ -241,6 +241,15 @@ export const appRoutes: Route[] = [
                 children: adminCoursesRoutes,
             },
             {
+                path: 'admin/results',
+                loadChildren: () =>
+                    import('./modules/admin/results/admin-results.routes')
+                        .then(m => m.ADMIN_RESULTS_ROUTES),
+                canActivate: [AuthGuard],                 // garde Auth si présent
+                // canActivate: [AuthGuard, AdminGuard],  // si tu as un guard Admin dédié
+                data: { roles: ['ADMIN'] }                // utile si ton AuthGuard lit data.roles
+            },
+            {
                 path: 'student/courses',
                 loadChildren: () =>
                     import('app/modules/student/courses/student-courses.routes')

@@ -1,0 +1,81 @@
+<!-- src/app/modules/admin/results/admin-results.component.html -->
+<mat-card class="aa-card">
+    <div class="aa-toolbar">
+        <mat-form-field appearance="outline">
+            <mat-label>Group</mat-label>
+            <mat-select [value]="selectedGroupId" (selectionChange)="onGroupChanged($event.value)">
+                <mat-option *ngFor="let g of groups" [value]="g.id">{{ g.nom }}</mat-option>
+            </mat-select>
+        </mat-form-field>
+
+        <span class="spacer"></span>
+
+        <button
+                mat-flat-button
+                color="primary"
+                (click)="applyPromotion()"
+                [disabled]="!preview() || !preview()?.allComplete"
+        >
+            Promote to next level
+        </button>
+    </div>
+
+    <div *ngIf="preview() as p; else empty" class="aa-results">
+        <div class="aa-summary">
+            <div><strong>Group:</strong> {{ p.groupName }} ({{ p.specialite }})</div>
+            <div><strong>Subjects:</strong> {{ p.expectedSubjects.join(', ') || '—' }}</div>
+            <div>
+                <strong>Admitted:</strong> {{ p.admittedCount }}
+                &nbsp;|&nbsp;
+                <strong>Rejected:</strong> {{ p.refusedCount }}
+                &nbsp;|&nbsp;
+                <strong>Incomplete:</strong> {{ p.incompleteCount }}
+            </div>
+            <div><strong>Next group:</strong> {{ p.suggestedNextGroupName || '—' }}</div>
+        </div>
+
+        <div class="aa-table" *ngIf="p.students?.length; else none">
+            <div class="aa-head">
+                <div>Student</div>
+                <div *ngFor="let s of subjects()">{{ s }}</div>
+                <div>Average</div>
+                <div>Status</div>
+            </div>
+
+            <div class="aa-row" *ngFor="let r of p.students">
+                <div class="stu">
+                    <div><strong>{{ r.studentName }}</strong></div>
+                    <div class="muted">{{ r.studentEmail }}</div>
+                </div>
+
+                <div *ngFor="let s of subjects()" class="num">
+                    {{ r.subjectAverages[s] ?? '—' }}
+                </div>
+
+                <div
+                        class="num overall"
+                        [ngClass]="{
+            ok: (r.overall ?? 0) >= 10,
+            bad: (r.overall ?? 0) < 10
+          }"
+                >
+                    <strong>{{ r.overall ?? '—' }}</strong>
+                </div>
+
+                <div>
+                    <span [class]="statusClass(r.status)">{{ r.status }}</span>
+                </div>
+            </div>
+        </div>
+
+        <ng-template #none>
+            <div class="aa-empty">No students found.</div>
+        </ng-template>
+    </div>
+
+    <ng-template #empty>
+        <div class="aa-empty">
+            {{ loading() ? 'Loading…' : 'Pick a group to view the results.' }}
+        </div>
+    </ng-template>
+</mat-card>
