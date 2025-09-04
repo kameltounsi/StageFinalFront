@@ -1,4 +1,3 @@
-// src/app/modules/admin/results/admin-results.api.ts
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 
@@ -19,7 +18,7 @@ export interface AdminGroupResultsPreviewDTO {
     expectedSubjects: string[];
     students: AdminStudentResultDTO[];
     admittedCount: number;
-    refusedCount: number;     // kept naming from backend DTO
+    refusedCount: number;     // keep field name aligned with backend
     incompleteCount: number;
     allComplete: boolean;
     suggestedNextGroupName: string | null;
@@ -37,6 +36,8 @@ export interface AdminApplyResultsResponse {
     targetGroupName: string;
     movedCount: number;
     stayedCount: number;
+    purgedNotesCount: number;
+    purgedClaimsCount: number;
 }
 
 @Injectable({ providedIn: 'root' })

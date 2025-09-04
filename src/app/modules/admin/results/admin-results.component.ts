@@ -1,13 +1,15 @@
-// src/app/modules/admin/results/admin-results.component.ts
 import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { AdminResultsApi, AdminGroupResultsPreviewDTO, AdminApplyResultsRequest } from './admin-results.api';
 import { HttpClient } from '@angular/common/http';
 import Swal from 'sweetalert2';
+
+import { AdminResultsApi, AdminGroupResultsPreviewDTO, AdminApplyResultsRequest, AdminApplyResultsResponse } from './admin-results.api';
+
+// Angular Material
 import { MatCardModule } from '@angular/material/card';
+import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatSelectModule } from '@angular/material/select';
 import { MatButtonModule } from '@angular/material/button';
-import { MatFormFieldModule } from '@angular/material/form-field';
 
 type Groupe = { id: number; nom: string; specialite: string };
 
@@ -16,7 +18,7 @@ type Groupe = { id: number; nom: string; specialite: string };
     standalone: true,
     templateUrl: './admin-results.component.html',
     styleUrls: ['./admin-results.component.css'],
-    imports: [CommonModule, MatCardModule, MatSelectModule, MatButtonModule, MatFormFieldModule]
+    imports: [CommonModule, MatCardModule, MatFormFieldModule, MatSelectModule, MatButtonModule],
 })
 export class AdminResultsComponent implements OnInit {
     private http = inject(HttpClient);
@@ -24,16 +26,16 @@ export class AdminResultsComponent implements OnInit {
 
     groups: Groupe[] = [];
     selectedGroupId: number | null = null;
+
     loading = signal(false);
     preview = signal<AdminGroupResultsPreviewDTO | null>(null);
-
     subjects = computed(() => this.preview()?.expectedSubjects ?? []);
 
     ngOnInit(): void {
         this.http.get<Groupe[]>('/api/admin/groups').subscribe({
             next: (gs) => {
                 this.groups = gs || [];
-                // Auto-select first group if you want instant view:
+                // Auto-select first group if you want an immediate view:
                 // if (this.groups.length) this.onGroupChanged(this.groups[0].id);
             },
             error: () => (this.groups = []),
@@ -48,8 +50,8 @@ export class AdminResultsComponent implements OnInit {
         this.loading.set(true);
         this.api.preview(groupId).subscribe({
             next: (p) => this.preview.set(p),
-            complete: () => this.loading.set(false),
             error: () => this.loading.set(false),
+            complete: () => this.loading.set(false),
         });
     }
 
@@ -64,33 +66,41 @@ export class AdminResultsComponent implements OnInit {
 
         const body: AdminApplyResultsRequest = {
             groupeId: p.groupId,
-            targetGroupId: p.suggestedNextGroupId ?? null, // if null, backend will auto-create when possible (A→B)
+            // If suggestedNextGroupId is null (e.g., A->B missing), backend will auto-create B
+            targetGroupId: p.suggestedNextGroupId ?? null,
         };
 
         Swal.fire({
             icon: 'question',
-            title: 'Promote to next level?',
+            title: 'Promote and publish results?',
             html: `
         <div style="text-align:left">
           <p><strong>Source group:</strong> ${p.groupName}</p>
           <p><strong>Suggested target:</strong> ${p.suggestedNextGroupName || '—'}</p>
           <p><strong>Admitted:</strong> ${p.admittedCount} &nbsp; | &nbsp; <strong>Rejected:</strong> ${p.refusedCount}</p>
+          <hr/>
+          <p>This will roll over to the new year and purge all current grades & claims for this group's students.</p>
         </div>
       `,
             showCancelButton: true,
-            confirmButtonText: 'Confirm',
+            confirmButtonText: 'Confirm & Publish',
             cancelButtonText: 'Cancel',
         }).then(res => {
             if (!res.isConfirmed) return;
 
             this.api.apply(body).subscribe({
-                next: (resp) => {
-                    Swal.fire('Done', `Promoted to ${resp.targetGroupName}: ${resp.movedCount}`, 'success');
-                    this.onGroupChanged(p.groupId); // refresh
+                next: (resp: AdminApplyResultsResponse) => {
+                    Swal.fire(
+                        'Published',
+                        `Promoted to <b>${resp.targetGroupName}</b>: ${resp.movedCount}<br/>
+             Purged grades: ${resp.purgedNotesCount}<br/>
+             Purged claims: ${resp.purgedClaimsCount}`,
+                        'success'
+                    );
+                    // Refresh view
+                    this.onGroupChanged(p.groupId);
                 },
-                error: (e) => {
-                    Swal.fire('Error', e?.error?.message || 'Failed to apply promotion.', 'error');
-                },
+                error: (e) => Swal.fire('Error', e?.error?.message || 'Failed to apply promotion.', 'error'),
             });
         });
     }
