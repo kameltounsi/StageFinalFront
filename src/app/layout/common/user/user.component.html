@@ -1,23 +1,23 @@
-<!-- Button -->
+<!-- src/app/layout/common/user/user.component.html -->
 <button mat-icon-button [matMenuTriggerFor]="userActions">
-    <span class="relative">
-        @if (showAvatar && user?.avatar) {
-            <img class="h-7 w-7 rounded-full" [src]="user.avatar" />
-        }
-        @if (!showAvatar || !user?.avatar) {
-            <mat-icon [svgIcon]="'heroicons_outline:user-circle'"></mat-icon>
-        }
-        <span
-                class="absolute bottom-0 right-0 h-2 w-2 rounded-full"
-                [ngClass]="{
-                'mb-px mr-px': !showAvatar || !user?.avatar,
-                'bg-green-500': user?.status === 'ONLINE',
-                'bg-amber-500': user?.status === 'AWAY',
-                'bg-red-500': user?.status === 'BUSY',
-                'bg-gray-400': user?.status === 'NOT_VISIBLE'
-            }"
-        ></span>
-    </span>
+  <span class="relative">
+    @if (showAvatar && (user?.profilePicture || user?.avatar)) {
+        <img class="h-7 w-7 rounded-full" [src]="user?.profilePicture || user?.avatar" />
+    }
+      @if (!showAvatar || (!user?.profilePicture && !user?.avatar)) {
+          <mat-icon [svgIcon]="'heroicons_outline:user-circle'"></mat-icon>
+      }
+      <span
+              class="absolute bottom-0 right-0 h-2 w-2 rounded-full"
+              [ngClass]="{
+        'mb-px mr-px': !showAvatar || (!user?.profilePicture && !user?.avatar),
+        'bg-green-500': user?.status === 'ONLINE',
+        'bg-amber-500': user?.status === 'AWAY',
+        'bg-red-500': user?.status === 'BUSY',
+        'bg-gray-400': user?.status === 'NOT_VISIBLE'
+      }"
+      ></span>
+  </span>
 </button>
 
 <!-- Main menu -->
@@ -29,18 +29,23 @@
         </span>
     </button>
     <mat-divider class="my-2"></mat-divider>
-    <button mat-menu-item>
+
+    <!-- Open Profile -->
+    <button mat-menu-item (click)="openProfile()">
         <mat-icon [svgIcon]="'heroicons_outline:user-circle'"></mat-icon>
         <span>Profile</span>
     </button>
+
     <button mat-menu-item>
         <mat-icon [svgIcon]="'heroicons_outline:cog-8-tooth'"></mat-icon>
         <span>Settings</span>
     </button>
+
     <button mat-menu-item [matMenuTriggerFor]="userStatus">
         <mat-icon [svgIcon]="'heroicons_outline:ellipsis-horizontal-circle'"></mat-icon>
         <span>Status</span>
     </button>
+
     <mat-divider class="my-2"></mat-divider>
     <button mat-menu-item (click)="signOut()">
         <mat-icon [svgIcon]="'heroicons_outline:arrow-right-on-rectangle'"></mat-icon>

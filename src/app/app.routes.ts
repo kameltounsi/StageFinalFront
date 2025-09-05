@@ -94,6 +94,10 @@ export const appRoutes: Route[] = [
                     import('app/modules/admin/dashboards/manage-users/add-user/add-user.routes'),
             },
             {
+                path: 'profile',
+                loadChildren: () => import('./modules/profile/profile.routes').then(m => m.PROFILE_ROUTES),
+            },
+            {
                 path: 'admin/manage-groups',
                 loadChildren: () =>
                     import('app/modules/admin/dashboards/manage-groups/manage-groups.routes')

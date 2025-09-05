@@ -1,0 +1,105 @@
+<mat-card class="pf-card">
+    <div class="pf-title">
+        <h2>My Profile</h2>
+        <p class="muted">Upload a new profile photo or change your password.</p>
+    </div>
+
+    <div class="pf-sections">
+        <!-- PHOTO (Upload) -->
+        <section class="pf-section">
+            <h3>Profile Photo</h3>
+
+            <div class="pf-photo">
+                <div class="pf-avatar">
+                    <img [src]="previewUrl || currentAvatar" alt="Avatar" />
+                </div>
+
+                <div class="pf-fields">
+                    <div class="file-row">
+                        <input
+                                id="avatar-file"
+                                class="file-input"
+                                type="file"
+                                accept="image/*"
+                                (change)="onFileSelected($event)"
+                        />
+                        <label class="file-label" for="avatar-file">
+                            <mat-icon>upload</mat-icon>
+                            <span>Choose image…</span>
+                        </label>
+
+                        <button
+                                mat-stroked-button
+                                color="primary"
+                                (click)="clearSelection()"
+                                [disabled]="!selectedFile || uploading"
+                        >
+                            <mat-icon>close</mat-icon>
+                            Clear
+                        </button>
+                    </div>
+
+                    <div class="pf-actions">
+                        <button
+                                mat-flat-button
+                                color="primary"
+                                (click)="uploadAvatar()"
+                                [disabled]="!selectedFile || uploading"
+                        >
+                            <mat-icon>{{ uploading ? 'hourglass_top' : 'save' }}</mat-icon>
+                            <span>{{ uploading ? 'Uploading…' : 'Upload & Save' }}</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <small class="muted">For best results use a square image (PNG/JPEG, max 5MB).</small>
+        </section>
+
+        <!-- PASSWORD -->
+        <section class="pf-section">
+            <h3>Change Password</h3>
+
+            <form class="pf-password" [formGroup]="passwordForm" (ngSubmit)="changePassword()">
+                <mat-form-field appearance="outline" class="w-full">
+                    <mat-label>Current password</mat-label>
+                    <input matInput type="password" formControlName="currentPassword" autocomplete="current-password" />
+                    <mat-error *ngIf="passwordForm.get('currentPassword')?.hasError('required')">
+                        Current password is required
+                    </mat-error>
+                </mat-form-field>
+
+                <mat-form-field appearance="outline" class="w-full">
+                    <mat-label>New password</mat-label>
+                    <input matInput type="password" formControlName="newPassword" autocomplete="new-password" />
+                    <mat-error *ngIf="passwordForm.get('newPassword')?.hasError('required')">
+                        New password is required
+                    </mat-error>
+                    <mat-error *ngIf="passwordForm.get('newPassword')?.hasError('minlength')">
+                        Minimum 8 characters
+                    </mat-error>
+                </mat-form-field>
+
+                <mat-form-field appearance="outline" class="w-full">
+                    <mat-label>Confirm new password</mat-label>
+                    <input matInput type="password" formControlName="confirmNewPassword" autocomplete="new-password" />
+                    <mat-error *ngIf="passwordForm.get('confirmNewPassword')?.hasError('required')">
+                        Please confirm your new password
+                    </mat-error>
+                    <mat-error *ngIf="passwordForm.get('confirmNewPassword')?.hasError('mustMatch')">
+                        Passwords do not match
+                    </mat-error>
+                </mat-form-field>
+
+                <div class="pf-actions">
+                    <button mat-flat-button color="primary" type="submit" [disabled]="passwordForm.invalid || changingPwd">
+                        <mat-icon>{{ changingPwd ? 'hourglass_top' : 'vpn_key' }}</mat-icon>
+                        <span>{{ changingPwd ? 'Changing…' : 'Change Password' }}</span>
+                    </button>
+                </div>
+            </form>
+
+            <small class="muted">We verify your current password before changing it.</small>
+        </section>
+    </div>
+</mat-card>
