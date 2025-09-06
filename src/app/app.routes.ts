@@ -204,6 +204,12 @@ export const appRoutes: Route[] = [
                         .then(m => m.default)
             },
             {
+                path: 'trainer/dashboard',
+                loadChildren: () => import('./modules/trainer/trainer-dashboard/trainer-dashboard.routes')
+                    .then(m => m.default)
+            },
+
+            {
                 path: 'trainer/notes',
                 loadChildren: () =>
                     import('./modules/trainer/notes/trainer-notes.routes')
@@ -222,6 +228,12 @@ export const appRoutes: Route[] = [
                 loadComponent: () => import('app/modules/trainer/manage-presence/manage-presence.component').then(m => m.ManagePresenceComponent)
             },
             // app/app.routes.ts (ou routes équivalentes)
+            {
+                path: 'student/dashboard',
+                loadChildren: () =>
+                    import('app/modules/student/student-dashboard/student-dashboard.routes')
+                        .then(m => m.default)
+            },
             {
                 path: 'student/absences',
                 loadChildren: () =>

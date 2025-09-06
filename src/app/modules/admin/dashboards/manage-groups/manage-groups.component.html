@@ -26,9 +26,8 @@
         </button>
     </form>
 
-    <!-- Filtres -->
+    <!-- Filtres + bouton Random Affect -->
     <div class="filter-bar">
-        <!-- Filtre par spécialité -->
         <mat-form-field appearance="outline" class="filter-field">
             <mat-label>Filter by Speciality</mat-label>
             <mat-select [(ngModel)]="selectedSpecialite" (selectionChange)="applyFilters()">
@@ -39,11 +38,15 @@
             </mat-select>
         </mat-form-field>
 
-        <!-- Recherche par nom -->
         <mat-form-field appearance="outline" class="search-field">
             <mat-label>Search by Group Name</mat-label>
-            <input matInput [(ngModel)]="searchTerm" (ngModelChange)="applyFilters()" placeholder="Type a group name...">
+            <input matInput [(ngModel)]="searchTerm" (ngModelChange)="applyFilters()" placeholder="Type a group name..." />
         </mat-form-field>
+
+        <button mat-flat-button color="accent" class="ml-auto" (click)="randomAffect()">
+            <mat-icon>shuffle</mat-icon>
+            Random Affect
+        </button>
     </div>
 
     <!-- Groupes filtrés -->
@@ -56,11 +59,12 @@
                 <div *ngFor="let group of groupedGroups[specialite]" class="group-item">
                     <span class="group-name">{{ group.nom }}</span>
 
-                    <!-- Bouton gérer les membres (fixé ici) -->
+                    <!-- Gérer les membres -->
                     <button mat-icon-button color="primary" (click)="openManageMembersDialog(group)">
                         <mat-icon>group</mat-icon>
                     </button>
 
+                    <!-- Supprimer le groupe -->
                     <button mat-icon-button color="warn" (click)="deleteGroup(group.id)">
                         <mat-icon>delete</mat-icon>
                     </button>
@@ -70,9 +74,10 @@
     </div>
 
     <!-- Paginator -->
-    <mat-paginator [length]="groups.length"
-                   [pageSize]="pageSize"
-                   [pageSizeOptions]="[3, 6, 9]"
-                   (page)="onPageChange($event)">
+    <mat-paginator
+            [length]="groups.length"
+            [pageSize]="pageSize"
+            [pageSizeOptions]="[3, 6, 9]"
+            (page)="onPageChange($event)">
     </mat-paginator>
 </div>

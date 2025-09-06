@@ -1,0 +1,105 @@
+<!-- src/app/modules/student-dashboard/student-dashboard.component.html -->
+<div class="sdash-wrapper" *ngIf="!loading; else loadingTpl">
+    <!-- Header -->
+    <div class="sdash-header">
+        <div class="s-title">
+            <img class="avatar" [src]="userSvc.current?.profilePicture || 'assets/images/avatars/avatar-default.png'" alt="Student" />
+            <div>
+                <h1>Welcome back, {{ meName.split(' ')[0] || 'Student' }}!</h1>
+                <p class="muted">
+                    Group: <strong>{{ overview?.groupName || '—' }}</strong>
+                    • Speciality: <strong>{{ overview?.specialite || '—' }}</strong>
+                    <span *ngIf="overview?.level"> • Level: <strong>{{ overview?.level }}</strong></span>
+                </p>
+            </div>
+        </div>
+
+        <div class="s-actions">
+            <a mat-stroked-button target="_blank" rel="noopener" href="/api/students/me/weekly-schedule.pdf">
+                <mat-icon>download</mat-icon> Weekly schedule
+            </a>
+            <button mat-stroked-button color="primary" (click)="refresh()" [disabled]="refreshing">
+                <mat-icon>refresh</mat-icon> {{ refreshing ? 'Refreshing…' : 'Refresh' }}
+            </button>
+        </div>
+    </div>
+
+    <!-- KPIs -->
+    <div class="kpi-grid">
+        <mat-card class="kpi-card">
+            <div class="kpi-head"><span>Average</span></div>
+            <div class="kpi-value">{{ overview?.average ?? '—' }}</div>
+            <div class="kpi-sub">/ 20</div>
+        </mat-card>
+
+        <mat-card class="kpi-card">
+            <div class="kpi-head"><span>Attendance</span></div>
+            <div class="kpi-row">
+                <div>Present: <strong>{{ overview?.attendedSessions || 0 }}</strong></div>
+                <div>Missed: <strong>{{ overview?.missedSessions || 0 }}</strong></div>
+            </div>
+        </mat-card>
+
+        <mat-card class="kpi-card">
+            <div class="kpi-head"><span>Pending</span></div>
+            <div class="kpi-row">
+                <div><strong>{{ overview?.pendingClaims || 0 }}</strong> claims</div>
+                <div><strong>{{ overview?.unreadMessages || 0 }}</strong> messages</div>
+            </div>
+        </mat-card>
+
+        <mat-card class="kpi-card">
+            <div class="kpi-head"><span>Next session</span></div>
+            <ng-container *ngIf="overview?.nextSession; else noNext">
+                <div class="next">
+                    <div class="n-subj">{{ overview?.nextSession?.subject }}</div>
+                    <div class="n-meta">
+                        {{ overview?.nextSession?.start | date:'EEE dd/MM, HH:mm' }} → {{ overview?.nextSession?.end | date:'HH:mm' }}
+                        • {{ overview?.nextSession?.room }}
+                        <span class="muted"> • {{ overview?.nextSession?.trainerName }}</span>
+                    </div>
+                </div>
+            </ng-container>
+            <ng-template #noNext><div class="muted small">No upcoming session.</div></ng-template>
+        </mat-card>
+    </div>
+
+    <!-- Today -->
+    <mat-card class="card">
+        <div class="card-title">Today’s Schedule</div>
+        <div class="today-list" *ngIf="today?.length; else noToday">
+            <div class="slot" *ngFor="let s of today">
+                <div class="time">{{ s.start | date:'HH:mm' }}–{{ s.end | date:'HH:mm' }}</div>
+                <div class="subj">{{ s.subject }}</div>
+                <div class="meta">{{ s.room }} • <span class="muted">{{ s.trainerName }}</span></div>
+            </div>
+        </div>
+        <ng-template #noToday><div class="empty">No sessions today.</div></ng-template>
+    </mat-card>
+
+    <!-- Grades -->
+    <mat-card class="card">
+        <div class="card-title">Grades by Subject</div>
+        <div class="grade-bars" *ngIf="grades?.length; else noGrades">
+            <div class="g-row" *ngFor="let g of grades">
+                <div class="g-label" [matTooltip]="g.subject">{{ g.subject }}</div>
+                <div class="g-track"><div class="g-fill" [style.width]="gradeWidth(g.average)"></div></div>
+                <div class="g-value">{{ g.average ?? '—' }}</div>
+            </div>
+        </div>
+        <ng-template #noGrades><div class="empty">No grades yet.</div></ng-template>
+    </mat-card>
+</div>
+
+<ng-template #loadingTpl>
+    <div class="loading-wrap">
+        <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+        <div class="muted mt-12">Loading student dashboard…</div>
+    </div>
+</ng-template>
+
+<div class="error-wrap" *ngIf="!loading && errorMsg">
+    <mat-icon color="warn">error_outline</mat-icon>
+    <span>{{ errorMsg }}</span>
+    <button mat-stroked-button color="primary" (click)="loadAll()">Retry</button>
+</div>

@@ -1,0 +1,139 @@
+<!-- Centered page shell -->
+<div class="trainer-shell tdash-wrapper" *ngIf="!loading; else loadingTpl">
+    <!-- Header -->
+    <div class="page-header tdash-header">
+        <div class="page-title t-title">
+            <img
+                    class="avatar"
+                    [src]="userSvc.current?.profilePicture || 'assets/images/avatars/avatar-default.png'"
+                    alt="Trainer"
+            />
+            <div>
+                <h1>Welcome back, {{ meName.split(' ')[0] || 'Trainer' }}!</h1>
+                <p class="page-sub muted">
+                    You’re teaching <strong>{{ overview?.myGroups || 0 }}</strong> group(s) ·
+                    <strong>{{ overview?.myStudents || 0 }}</strong> students in total.
+                </p>
+            </div>
+        </div>
+
+        <div class="header-actions t-actions">
+            <button mat-stroked-button color="primary" (click)="refresh()" [disabled]="refreshing">
+                <mat-icon>refresh</mat-icon>
+                <span>{{ refreshing ? 'Refreshing…' : 'Refresh' }}</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- KPIs -->
+    <div class="kpi-grid">
+        <mat-card class="card kpi kpi-card" [ngClass]="kpiColor('blue')">
+            <div class="kpi-head"><span>My Groups</span></div>
+            <div class="kpi-value">{{ overview?.myGroups || 0 }}</div>
+            <div class="kpi-sub">Active this term</div>
+        </mat-card>
+
+        <mat-card class="card kpi kpi-card" [ngClass]="kpiColor('green')">
+            <div class="kpi-head"><span>Students</span></div>
+            <div class="kpi-value">{{ overview?.myStudents || 0 }}</div>
+            <div class="kpi-sub">Across all my groups</div>
+        </mat-card>
+
+        <mat-card class="card kpi kpi-card" [ngClass]="kpiColor('amber')">
+            <div class="kpi-head"><span>Sessions (this week)</span></div>
+            <div class="kpi-value">{{ overview?.sessionsThisWeek || 0 }}</div>
+            <div class="kpi-sub">Scheduled</div>
+        </mat-card>
+
+        <mat-card class="card kpi kpi-card" [ngClass]="kpiColor('red')">
+            <div class="kpi-head"><span>Pending</span></div>
+            <div class="kpi-row">
+                <div><strong>{{ overview?.pendingClaims || 0 }}</strong> claims</div>
+                <div><strong>{{ overview?.ungradedSubmissions || 0 }}</strong> ungraded</div>
+            </div>
+        </mat-card>
+    </div>
+
+    <!-- Students per group (horizontal bar chart) -->
+    <mat-card class="card chart-card">
+        <div class="chart-title">Students per Group</div>
+
+        <ng-container *ngIf="groups?.length; else noGroupsChart">
+            <div class="bars">
+                <div class="bar-row" *ngFor="let g of groups; trackBy: trackById">
+                    <div class="bar-label" [matTooltip]="g.specialite">{{ g.name }}</div>
+                    <div class="bar-track">
+                        <div
+                                class="bar-fill"
+                                [style.width.%]="(100 * g.studentCount) / (maxStudentsInMyGroups || 1)"
+                        ></div>
+                    </div>
+                    <div class="bar-value">{{ g.studentCount }}</div>
+                </div>
+            </div>
+        </ng-container>
+
+        <ng-template #noGroupsChart>
+            <div class="empty small muted">No groups yet to display.</div>
+        </ng-template>
+    </mat-card>
+
+    <!-- Groups grid -->
+    <div class="group-grid">
+        <mat-card class="card group-card" *ngFor="let g of groups; trackBy: trackById">
+            <div class="g-top">
+                <div class="g-name">
+          <span class="chip" [class.chip-a]="g.level==='A'" [class.chip-b]="g.level==='B'">
+            {{ g.level || '—' }}
+          </span>
+                    <h4>{{ g.name }}</h4>
+                </div>
+                <div class="g-spec">{{ g.specialite }}</div>
+            </div>
+
+            <div class="g-stats">
+                <div>
+                    <div class="s-label">Students</div>
+                    <div class="s-value">{{ g.studentCount }}</div>
+                </div>
+                <div>
+                    <div class="s-label">Level</div>
+                    <div class="s-value">{{ g.level || '—' }}</div>
+                </div>
+            </div>
+
+            <div class="g-actions">
+                <button mat-stroked-button color="primary" (click)="toggleRoster(g)">
+                    <mat-icon>group</mat-icon>
+                    <span>{{ roster[g.id] ? 'Hide Roster' : 'Show Roster' }}</span>
+                </button>
+            </div>
+
+            <div class="roster" *ngIf="roster[g.id] as list">
+                <div class="student" *ngFor="let s of list">
+                    <img class="avatar" [src]="s.profilePicture || 'assets/images/avatars/avatar-default.png'" />
+                    <div class="meta">
+                        <div class="name">{{ s.fullName }}</div>
+                        <div class="email">{{ s.email }}</div>
+                    </div>
+                </div>
+                <div class="empty small muted" *ngIf="!list.length">No students.</div>
+            </div>
+        </mat-card>
+    </div>
+</div>
+
+<!-- Loading -->
+<ng-template #loadingTpl>
+    <div class="loading-wrap">
+        <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+        <div class="muted mt-12">Loading trainer dashboard…</div>
+    </div>
+</ng-template>
+
+<!-- Error -->
+<div class="error-wrap" *ngIf="!loading && errorMsg">
+    <mat-icon color="warn">error_outline</mat-icon>
+    <span>{{ errorMsg }}</span>
+    <button mat-stroked-button color="primary" (click)="loadAll()">Retry</button>
+</div>

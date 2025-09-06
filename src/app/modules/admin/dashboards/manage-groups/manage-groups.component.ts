@@ -1,15 +1,15 @@
-import {Component, OnInit, ViewChild} from '@angular/core';
-import {FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators} from '@angular/forms';
-import { HttpClient } from '@angular/common/http';
+import { Component, OnInit, ViewChild } from '@angular/core';
+import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import Swal from 'sweetalert2';
-import {MatFormField, MatLabel} from "@angular/material/form-field";
-import {MatOption, MatSelect} from "@angular/material/select";
-import {MatCard, MatCardActions, MatCardContent, MatCardHeader} from "@angular/material/card";
-import {NgForOf, NgIf} from "@angular/common";
-import {MatButton, MatIconButton} from "@angular/material/button";
-import {MatInput} from "@angular/material/input";
-import {MatIcon} from "@angular/material/icon";
-import {MatPaginator} from "@angular/material/paginator";
+import { MatFormField, MatLabel } from "@angular/material/form-field";
+import { MatOption, MatSelect } from "@angular/material/select";
+import { MatCard, MatCardActions, MatCardContent, MatCardHeader } from "@angular/material/card";
+import { NgForOf, NgIf } from "@angular/common";
+import { MatButton, MatIconButton } from "@angular/material/button";
+import { MatInput } from "@angular/material/input";
+import { MatIcon } from "@angular/material/icon";
+import { MatPaginator } from "@angular/material/paginator";
 import { MatDialog } from '@angular/material/dialog';
 import { ManageMembersDialogComponent } from './manage-members-dialog/manage-members-dialog.component';
 
@@ -62,7 +62,23 @@ export class ManageGroupsComponent implements OnInit {
 
     niveaux: string[] = ["A", "B"];
 
-    constructor(private fb: FormBuilder, private http: HttpClient ,   private dialog: MatDialog) {
+    displayedGroups: any[] = [];
+    pageSize = 6;
+    currentPage = 0;
+
+    @ViewChild(MatPaginator) paginator!: MatPaginator;
+
+    groupedGroups: { [key: string]: any[] } = {};
+    protected readonly Object = Object;
+
+    searchTerm: string = '';
+    selectedSpecialite: string = '';
+
+    constructor(
+        private fb: FormBuilder,
+        private http: HttpClient,
+        private dialog: MatDialog
+    ) {
         this.groupForm = this.fb.group({
             specialite: ['', Validators.required],
             niveau: ['', Validators.required],
@@ -75,59 +91,20 @@ export class ManageGroupsComponent implements OnInit {
         this.loadGroups();
     }
 
-   /* groupedGroups: { [key: string]: any[] } = {};
-
     loadGroups(): void {
         this.http.get<any[]>('http://localhost:8089/api/groups').subscribe(res => {
             this.groups = res;
 
-            // Organiser par spécialité
-            this.groupedGroups = {};
-            this.groups.forEach(group => {
-                if (!this.groupedGroups[group.specialite]) {
-                    this.groupedGroups[group.specialite] = [];
-                }
-                this.groupedGroups[group.specialite].push(group);
-            });
-
-            // Trier chaque spécialité : Niveau A avant Niveau B
-            Object.keys(this.groupedGroups).forEach(specialite => {
-                this.groupedGroups[specialite].sort((a, b) => {
-                    const order = { 'A': 1, 'B': 2 };
-                    const nivA = a.niveau || '';
-                    const nivB = b.niveau || '';
-
-                    // Comparer par niveau
-                    if (order[nivA] < order[nivB]) return -1;
-                    if (order[nivA] > order[nivB]) return 1;
-
-                    // Si même niveau, comparer par nom (pour "A" vs "A 2")
-                    return a.nom.localeCompare(b.nom, undefined, { numeric: true });
-                });
-            });
-        });
-    }
-*/
-    displayedGroups: any[] = [];
-    pageSize = 6; // 6 groupes par page (par ex.)
-    currentPage = 0;
-
-    @ViewChild(MatPaginator) paginator!: MatPaginator;
-
-    loadGroups(): void {
-        this.http.get<any[]>('http://localhost:8089/api/groups').subscribe(res => {
-            this.groups = res;
-
-            // Trier : par specialité puis par niveau
+            // Tri : par spécialité puis par niveau déduit du nom, puis par nom
             this.groups.sort((a, b) => {
                 const specCompare = a.specialite.localeCompare(b.specialite);
                 if (specCompare !== 0) return specCompare;
 
-                const order = { 'A': 1, 'B': 2 };
-                const nivA = a.niveau || '';
-                const nivB = b.niveau || '';
-                if (order[nivA] < order[nivB]) return -1;
-                if (order[nivA] > order[nivB]) return 1;
+                const order: any = { 'A': 1, 'B': 2 };
+                const nivA = this.extractLevel(a.nom);
+                const nivB = this.extractLevel(b.nom);
+                if ((order[nivA] ?? 99) < (order[nivB] ?? 99)) return -1;
+                if ((order[nivA] ?? 99) > (order[nivB] ?? 99)) return 1;
 
                 return a.nom.localeCompare(b.nom, undefined, { numeric: true });
             });
@@ -136,7 +113,13 @@ export class ManageGroupsComponent implements OnInit {
         });
     }
 
-    groupedGroups: { [key: string]: any[] } = {};
+    private extractLevel(nom: string): 'A' | 'B' | '' {
+        if (!nom) return '';
+        // Exemples: "WD A", "WD A 2"
+        if (nom.includes(' A')) return 'A';
+        if (nom.includes(' B')) return 'B';
+        return '';
+    }
 
     updatePagination(filteredGroups: any[] = this.groups): void {
         const startIndex = this.currentPage * this.pageSize;
@@ -152,13 +135,12 @@ export class ManageGroupsComponent implements OnInit {
         });
     }
 
-
-
     onPageChange(event: any): void {
         this.currentPage = event.pageIndex;
         this.pageSize = event.pageSize;
         this.updatePagination();
     }
+
     openManageMembersDialog(group: any): void {
         this.dialog.open(ManageMembersDialogComponent, {
             width: '90vw',
@@ -166,9 +148,11 @@ export class ManageGroupsComponent implements OnInit {
             maxWidth: '1200px',
             panelClass: 'custom-dialog-container',
             data: { group }
+        }).afterClosed().subscribe(() => {
+            // rafraîchir pour voir les changements
+            this.loadGroups();
         });
     }
-
 
     addGroup(): void {
         if (this.groupForm.invalid) {
@@ -189,48 +173,6 @@ export class ManageGroupsComponent implements OnInit {
         this.http.post('http://localhost:8089/api/groups/add', formData).subscribe((res: any) => {
             Swal.fire('Success', `Group ${res.nom} created successfully!`, 'success');
             this.groupForm.reset();
-
-            // Recharger tous les groupes
-            this.http.get<any[]>('http://localhost:8089/api/groups').subscribe(groups => {
-                this.groups = groups;
-                // Réappliquer les filtres actuels
-                //this.loadGroups();
-
-                this.applyFilters();
-
-
-            });
-        });
-    }
-
-    /*
-    addGroup(): void {
-        if (this.groupForm.invalid) {
-            Swal.fire('Error', 'Please fill all required fields', 'error');
-            return;
-        }
-
-        const specialite = this.groupForm.get('specialite')?.value;
-        const niveau = this.groupForm.get('niveau')?.value;
-
-        // Générer un nom unique pour le groupe
-        const nom = this.generateGroupName(specialite, niveau);
-
-        const formData = new FormData();
-        formData.append('specialite', specialite);
-        formData.append('niveau', niveau);
-        formData.append('nom', nom);
-
-        const trainers = this.groupForm.get('trainerIds')?.value || [];
-        trainers.forEach((id: number) => formData.append('trainerIds', id.toString()));
-
-        const students = this.groupForm.get('studentIds')?.value || [];
-        students.forEach((id: number) => formData.append('studentIds', id.toString()));
-
-        this.http.post('http://localhost:8089/api/groups/add', formData).subscribe((res: any) => {
-            Swal.fire('Success', `Group ${res.nom} created successfully!`, 'success');
-            this.groupForm.reset();
-
             // Recharger et réappliquer les filtres
             this.http.get<any[]>('http://localhost:8089/api/groups').subscribe(groups => {
                 this.groups = groups;
@@ -238,9 +180,7 @@ export class ManageGroupsComponent implements OnInit {
             });
         });
     }
-*/
 
-/*
     deleteGroup(id: number): void {
         Swal.fire({
             title: 'Are you sure?',
@@ -254,29 +194,6 @@ export class ManageGroupsComponent implements OnInit {
             if (result.isConfirmed) {
                 this.http.delete(`http://localhost:8089/api/groups/${id}`).subscribe(() => {
                     Swal.fire('Deleted!', 'The group has been deleted.', 'success');
-                    this.groups = groups;
-
-                    this.applyFilters();
-                });
-            }
-        });
-    }
-*/
-    deleteGroup(id: number): void {
-        Swal.fire({
-            title: 'Are you sure?',
-            text: 'This will delete the group permanently.',
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonColor: '#3085d6',
-            cancelButtonColor: '#d33',
-            confirmButtonText: 'Yes, delete it!'
-        }).then(result => {
-            if (result.isConfirmed) {
-                this.http.delete(`http://localhost:8089/api/groups/${id}`).subscribe(() => {
-                    Swal.fire('Deleted!', 'The group has been deleted.', 'success');
-
-                    // Recharger les groupes puis appliquer les filtres
                     this.http.get<any[]>('http://localhost:8089/api/groups').subscribe(groups => {
                         this.groups = groups;
                         this.applyFilters();
@@ -286,24 +203,19 @@ export class ManageGroupsComponent implements OnInit {
         });
     }
 
-    protected readonly Object = Object;
-    searchTerm: string = '';
-
     applySearch(): void {
         const term = this.searchTerm.toLowerCase().trim();
 
         if (!term) {
-            // si rien tapé → afficher tout
             this.updatePagination();
             return;
         }
 
         const filteredGroups = this.groups.filter(group =>
-            group.specialite.toLowerCase().includes(term) ||
-            group.nom.toLowerCase().includes(term)
+            (group.specialite || '').toLowerCase().includes(term) ||
+            (group.nom || '').toLowerCase().includes(term)
         );
 
-        // Recréer groupedGroups avec les résultats filtrés
         this.groupedGroups = {};
         filteredGroups.forEach(group => {
             if (!this.groupedGroups[group.specialite]) {
@@ -312,11 +224,9 @@ export class ManageGroupsComponent implements OnInit {
             this.groupedGroups[group.specialite].push(group);
         });
     }
-    selectedSpecialite: string = '';
 
     filterBySpecialite(): void {
         if (!this.selectedSpecialite) {
-            // si aucune spécialité sélectionnée → afficher tout
             this.updatePagination();
             return;
         }
@@ -325,7 +235,6 @@ export class ManageGroupsComponent implements OnInit {
             group.specialite === this.selectedSpecialite
         );
 
-        // Regrouper les groupes filtrés par spécialité
         this.groupedGroups = {};
         filteredGroups.forEach(group => {
             if (!this.groupedGroups[group.specialite]) {
@@ -338,23 +247,99 @@ export class ManageGroupsComponent implements OnInit {
     applyFilters(): void {
         let filteredGroups = this.groups;
 
-        // Filtre spécialité
         if (this.selectedSpecialite) {
             filteredGroups = filteredGroups.filter(group =>
                 group.specialite === this.selectedSpecialite
             );
         }
 
-        // Filtre texte
         if (this.searchTerm) {
             const term = this.searchTerm.toLowerCase();
             filteredGroups = filteredGroups.filter(group =>
-                group.nom.toLowerCase().includes(term)
+                (group.nom || '').toLowerCase().includes(term)
             );
         }
 
-        // Réinitialiser la page si besoin (ex: nouveau filtre)
         this.currentPage = 0;
         this.updatePagination(filteredGroups);
+    }
+
+    // ---------------------------
+    // 🔀 RANDOM AFFECT UI handler
+    // ---------------------------
+    randomAffect(): void {
+        if (!this.selectedSpecialite) {
+            Swal.fire('Info', 'Choisissez d’abord une spécialité (Filter by Speciality).', 'info');
+            return;
+        }
+
+        Swal.fire({
+            title: '⚠️ Réinitialisation & Affectation aléatoire',
+            html: `
+        <div style="text-align:left">
+          <p>Cette action va :</p>
+          <ul>
+            <li>Réinitialiser les affectations des étudiants de la spécialité <b>${this.selectedSpecialite}</b></li>
+            <li>Supprimer leurs <b>présences</b> et <b>notes</b></li>
+            <li>Répartir aléatoirement et équitablement sur les groupes <b>niveau A ou B</b></li>
+          </ul>
+        </div>
+        <div style="margin-top:8px;text-align:left">
+          <label for="nivSel"><b>Niveau :</b></label>
+          <select id="nivSel" class="swal2-select">
+            <option value="A">A</option>
+            <option value="B">B</option>
+          </select>
+        </div>
+      `,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Lancer',
+            cancelButtonText: 'Annuler',
+            focusConfirm: false,
+            preConfirm: () => {
+                const el = document.getElementById('nivSel') as HTMLSelectElement;
+                if (!el?.value) {
+                    Swal.showValidationMessage('Choisissez un niveau (A/B)');
+                }
+                return { level: el.value };
+            }
+        }).then(result => {
+            if (!result.isConfirmed) return;
+
+            const level = result.value.level;
+            const specParam = this.selectedSpecialite.trim(); // ✅ ne pas mettre en minuscule
+
+            this.callRandomAssign(specParam, level, true).subscribe({
+                next: (report: any) => {
+                    this.loadGroups();
+                    const lines = Object.entries(report.assignedPerGroup || {})
+                        .map(([g, c]) => `<li><b>${g}</b> : ${c} étudiants</li>`).join('');
+                    Swal.fire(
+                        'Terminé ✅',
+                        `Étudiants affectés : <b>${report.totalStudents}</b><br/>
+             Groupes: <b>${report.totalGroups}</b><br/>
+             <ul>${lines}</ul>`,
+                        'success'
+                    );
+                },
+                error: (err) => {
+                    const msg = (err?.error?.message || err?.error || '').toString() || 'Impossible de lancer l’affectation.';
+                    Swal.fire('Erreur', msg, 'error');
+                }
+            });
+        });
+    }
+
+    // ---------------------------
+    // 🔗 Appel HTTP direct (sans service)
+    // ---------------------------
+    private callRandomAssign(specialite: string, level: string, wipe: boolean) {
+        const params = new HttpParams()
+            .set('specialite', specialite)  // le backend gère la casse
+            .set('level', level)
+            .set('wipe', String(wipe));
+
+        return this.http.post<any>('http://localhost:8089/api/groups/random-assign', {}, { params });
     }
 }
