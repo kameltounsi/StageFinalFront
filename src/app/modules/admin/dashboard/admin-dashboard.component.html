@@ -1,0 +1,227 @@
+<div class="dash-wrapper" *ngIf="!loading; else loadingTpl">
+    <!-- Header -->
+    <div class="dash-header">
+        <div class="title">
+            <img
+                    class="avatar"
+                    [src]="userSvc.current?.profilePicture || 'assets/images/avatars/avatar-default.png'"
+                    alt="Admin"
+            />
+            <div>
+                <h1>Welcome back, {{ adminName.split(' ')[0] || 'Admin' }}!</h1>
+                <p class="muted">
+                    You have <strong>{{ overview?.claims.pending || 0 }}</strong> pending claims and
+                    <strong>{{ overview?.promotionReadyGroups || 0 }}</strong> groups ready to promote.
+                </p>
+            </div>
+        </div>
+
+        <div class="actions">
+            <button mat-stroked-button color="primary" (click)="refresh()" [disabled]="refreshing">
+                <mat-icon>refresh</mat-icon>
+                <span>{{ refreshing ? 'Refreshing…' : 'Refresh' }}</span>
+            </button>
+            <button mat-stroked-button>
+                <mat-icon>chat_bubble</mat-icon>
+                Messages
+            </button>
+        </div>
+    </div>
+
+    <!-- Tabs -->
+    <mat-tab-group class="dash-tabs" animationDuration="300ms">
+        <!-- HOME -->
+        <mat-tab label="Home">
+            <!-- KPIs -->
+            <div class="kpi-grid">
+                <mat-card class="kpi-card" [ngClass]="kpiColor('blue')">
+                    <div class="kpi-head">
+                        <span>Students</span>
+                        <button mat-icon-button [matMenuTriggerFor]="kpiMenu"><mat-icon>more_vert</mat-icon></button>
+                    </div>
+                    <div class="kpi-value">{{ overview?.students.total || 0 }}</div>
+                    <div class="kpi-sub">Unassigned: <strong>{{ overview?.students.unassigned || 0 }}</strong></div>
+                </mat-card>
+
+                <mat-card class="kpi-card" [ngClass]="kpiColor('red')">
+                    <div class="kpi-head">
+                        <span>Pending Claims</span>
+                        <button mat-icon-button [matMenuTriggerFor]="kpiMenu"><mat-icon>more_vert</mat-icon></button>
+                    </div>
+                    <div class="kpi-value">{{ overview?.claims.pending || 0 }}</div>
+                    <div class="kpi-sub">Need attention</div>
+                </mat-card>
+
+                <mat-card class="kpi-card" [ngClass]="kpiColor('amber')">
+                    <div class="kpi-head">
+                        <span>Groups</span>
+                        <button mat-icon-button [matMenuTriggerFor]="kpiMenu"><mat-icon>more_vert</mat-icon></button>
+                    </div>
+                    <div class="kpi-value">{{ overview?.groups.total || 0 }}</div>
+                    <div class="kpi-sub">Low capacity: <strong>{{ overview?.groups.lowCapacity || 0 }}</strong></div>
+                </mat-card>
+
+                <mat-card class="kpi-card" [ngClass]="kpiColor('green')">
+                    <div class="kpi-head">
+                        <span>Promotion Ready</span>
+                        <button mat-icon-button [matMenuTriggerFor]="kpiMenu"><mat-icon>more_vert</mat-icon></button>
+                    </div>
+                    <div class="kpi-value">{{ overview?.promotionReadyGroups || 0 }}</div>
+                    <div class="kpi-sub">All grades complete</div>
+                </mat-card>
+            </div>
+
+            <!-- Charts / Capacity -->
+            <div class="chart-row">
+                <!-- Students by Speciality (bars) -->
+                <mat-card class="chart-card">
+                    <div class="chart-title">Students by Speciality</div>
+
+                    <ng-container *ngIf="specCounts?.length; else noSpec">
+                        <div class="hbars">
+                            <div class="hbar-row" *ngFor="let c of specCounts; index as i">
+                                <div class="hbar-label" [matTooltip]="c.specialite">
+                                    <span class="dot" [style.background]="i % 2 ? '#6366f1' : '#84cc16'"></span>
+                                    {{ c.specialite }}
+                                </div>
+
+                                <div class="hbar-track">
+                                    <div
+                                            class="hbar-fill"
+                                            [style.width.%]="(100 * c.count) / (maxSpecCount || 1)"
+                                    ></div>
+                                </div>
+
+                                <div class="hbar-value">
+                                    {{ c.count }}
+                                    <span class="pct">
+                    ({{ ((c.count / (overview?.students.total || 1)) * 100) | number:'1.0-0' }}%)
+                  </span>
+                                </div>
+                            </div>
+                        </div>
+                    </ng-container>
+
+                    <ng-template #noSpec>
+                        <div class="empty">No speciality data yet.</div>
+                    </ng-template>
+                </mat-card>
+
+                <!-- Capacity mini list -->
+                <mat-card class="chart-card">
+                    <div class="chart-title">Capacity Overview</div>
+                    <div class="capacity-grid">
+                        <div class="cap-item" *ngFor="let g of groups | slice:0:6; trackBy: trackById">
+                            <div class="cap-title">{{ g.name }}</div>
+                            <mat-progress-bar
+                                    mode="determinate"
+                                    [value]="100 - Math.max(0, Math.min(100, (g.studentCapacityLeft / Math.max(1, g.studentCapacityLeft + g.studentCount))*100))"
+                            ></mat-progress-bar>
+                            <div class="cap-meta">
+                                <span>{{ g.studentCount }} students</span>
+                                <span>{{ g.studentCapacityLeft }} slots left</span>
+                            </div>
+                        </div>
+                    </div>
+                </mat-card>
+            </div>
+
+            <!-- Groups grid -->
+            <div class="group-grid">
+                <mat-card class="group-card" *ngFor="let g of groups; trackBy: trackById">
+                    <div class="group-top">
+                        <div class="group-name">
+                            <span class="chip" [class.chip-a]="g.level==='A'" [class.chip-b]="g.level==='B'">{{ g.level || '—' }}</span>
+                            <h4>{{ g.name }}</h4>
+                        </div>
+                        <div class="group-specialite">{{ g.specialite }}</div>
+                    </div>
+
+                    <div class="group-stats">
+                        <div>
+                            <div class="s-label">Students</div>
+                            <div class="s-value">{{ g.studentCount }}</div>
+                        </div>
+                        <div>
+                            <div class="s-label">Slots left</div>
+                            <div class="s-value">{{ g.studentCapacityLeft }}</div>
+                        </div>
+                        <div>
+                            <div class="s-label">Claims</div>
+                            <div class="s-value">{{ g.pendingClaims }}</div>
+                        </div>
+                    </div>
+
+                    <div class="group-footer" [class.done]="g.gradingComplete">
+                        <div class="pill" title="Admitted">{{ g.admittedCount }} ✔</div>
+                        <div class="pill warn" title="Rejected">{{ g.rejectedCount }} ✖</div>
+                        <div class="pill mute" title="Incomplete">{{ g.incompleteCount }} …</div>
+                        <span class="status" [class.ok]="g.gradingComplete" [class.bad]="!g.gradingComplete">
+              {{ g.gradingComplete ? 'Complete' : 'Pending' }}
+            </span>
+                    </div>
+                </mat-card>
+            </div>
+        </mat-tab>
+
+        <!-- TEAM -->
+        <mat-tab label="Team">
+            <mat-card class="section-card">
+                <div class="section-head">
+                    <h3>Trainers by Speciality</h3>
+                    <span class="muted small">{{ trainersBySpec?.length || 0 }} specialities</span>
+                </div>
+
+                <ng-container *ngIf="trainersBySpec?.length; else noTeam">
+                    <div class="spec-grid">
+                        <div class="spec-card" *ngFor="let sp of trainersBySpec">
+                            <div class="spec-title">{{ sp.specialite || '—' }}</div>
+
+                            <ng-container *ngIf="sp.trainers?.length; else noneInSpec">
+                                <div class="trainer-row" *ngFor="let t of sp.trainers">
+                                    <img class="avatar" [src]="t.profilePicture || 'assets/images/avatars/avatar-default.png'" />
+                                    <div class="t-meta">
+                                        <div class="name">{{ t.fullName }}</div>
+                                        <div class="email">{{ t.email }}</div>
+                                        <div class="chips">
+                                            <span class="chip" *ngFor="let g of t.groups">{{ g.name }}</span>
+                                            <span class="chip muted" *ngIf="!t.groups?.length">No class</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </ng-container>
+
+                            <ng-template #noneInSpec>
+                                <div class="empty small">No trainers in this speciality.</div>
+                            </ng-template>
+                        </div>
+                    </div>
+                </ng-container>
+
+                <ng-template #noTeam>
+                    <div class="empty">No trainer data yet.</div>
+                </ng-template>
+            </mat-card>
+        </mat-tab>
+    </mat-tab-group>
+
+    <!-- menu for dots -->
+    <mat-menu #kpiMenu="matMenu">
+        <button mat-menu-item>View details</button>
+        <button mat-menu-item>Export</button>
+    </mat-menu>
+</div>
+
+<ng-template #loadingTpl>
+    <div class="loading-wrap">
+        <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+        <div class="muted mt-12">Loading dashboard…</div>
+    </div>
+</ng-template>
+
+<!-- Error -->
+<div class="error-wrap" *ngIf="!loading && errorMsg">
+    <mat-icon color="warn">error_outline</mat-icon>
+    <span>{{ errorMsg }}</span>
+    <button mat-stroked-button color="primary" (click)="loadAll()">Retry</button>
+</div>

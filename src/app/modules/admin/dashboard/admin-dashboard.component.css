@@ -1,0 +1,373 @@
+/* ==========================================================================
+   Admin Dashboard — COMPLETE CSS
+   ========================================================================== */
+
+/* === Theme tokens ======================================================== */
+:root {
+    --bg: #f6f8fb;
+    --text: #0f172a;
+    --muted: #6b7280;
+
+    --surface: #ffffff;
+    --surface-2: #f1f5f9;
+
+    --primary: #6366f1;   /* indigo */
+    --primary-2: #a5b4fc;
+    --blue: #3b82f6;
+    --green: #16a34a;
+    --amber: #d97706;
+    --red: #ef4444;
+
+    --ring: rgba(99,102,241,.28);
+    --card-border: rgba(15,23,42,.06);
+    --card-shadow: 0 8px 24px rgba(15,23,42,.06), 0 2px 6px rgba(15,23,42,.04);
+    --card-shadow-hover: 0 14px 32px rgba(15,23,42,.10), 0 4px 10px rgba(15,23,42,.06);
+
+    /* Layout spacing */
+    --card-gap: 22px;      /* gap inside grids */
+    --card-pad: 18px;      /* inner padding of cards */
+    --section-gap: 36px;   /* vertical spacing between sections/rows */
+}
+
+/* === Page wrapper & header ============================================== */
+.dash-wrapper{
+    display: grid;
+    gap: 18px;
+    padding: 18px 22px; /* gutter so cards don’t touch viewport edges */
+    background:
+            radial-gradient(1200px 600px at -10% -10%, #eef2ff 0, transparent 50%),
+            radial-gradient(900px 500px at 120% -20%, #f0fdf4 0, transparent 50%),
+            var(--bg);
+}
+
+.dash-header{display:flex;align-items:center;justify-content:space-between;gap:14px}
+.dash-header .title{display:flex;align-items:center;gap:14px}
+
+.dash-header .avatar{
+    width:46px;height:46px;border-radius:999px;object-fit:cover;border:2px solid #fff;
+    box-shadow:0 6px 16px rgba(15,23,42,.12); position:relative;
+}
+.dash-header .avatar::after{
+    content:"";position:absolute;inset:-3px;border-radius:999px;z-index:-1;filter:blur(8px);opacity:.18;
+    background:conic-gradient(from 140deg,var(--primary) 0 25%,transparent 25% 50%,#22c55e 50% 75%,transparent 75% 100%);
+}
+.dash-header h1{margin:0;font-weight:800;letter-spacing:.2px;color:var(--text)}
+.muted{color:var(--muted)}
+.actions button+button{margin-left:8px}
+
+/* === Mat tabs spacing (transparent background) ========================== */
+.dash-tabs{background:transparent}
+
+/* === Generic card look =================================================== */
+mat-card.kpi-card,
+mat-card.chart-card,
+mat-card.group-card,
+.section-card,
+.spec-card,
+.trainer-card{
+    background:linear-gradient(180deg,rgba(255,255,255,.92),rgba(255,255,255,.96));
+    border:1px solid var(--card-border);
+    border-radius:16px !important;
+    box-shadow:var(--card-shadow);
+    padding: var(--card-pad) !important;
+    transition:transform .18s ease,box-shadow .18s ease,border-color .18s ease;
+    will-change:transform; backdrop-filter:saturate(1.1) blur(6px);
+}
+mat-card.kpi-card:hover,
+mat-card.chart-card:hover,
+mat-card.group-card:hover,
+.section-card:hover,
+.spec-card:hover,
+.trainer-card:hover{
+    transform:translateY(-2px);
+    box-shadow:var(--card-shadow-hover);
+    border-color:rgba(99,102,241,.18);
+}
+
+/* === KPI grid ============================================================ */
+.kpi-grid{
+    display:grid;
+    grid-template-columns:repeat(4,minmax(0,1fr));
+    gap: var(--card-gap);
+    margin-bottom: var(--section-gap);        /* SPACE BELOW KPI ROW */
+}
+.kpi-card{position:relative;overflow:hidden}
+.kpi-card::before{
+    content:"";position:absolute;inset:0;pointer-events:none;
+    background:
+            radial-gradient(400px 180px at -10% -40%,rgba(99,102,241,.10),transparent 50%),
+            radial-gradient(240px 120px at 110% 0%,rgba(34,197,94,.10),transparent 55%);
+}
+.kpi-head{display:flex;align-items:center;justify-content:space-between;color:var(--muted);margin-bottom:6px}
+.kpi-value{font-size:40px;font-weight:800;letter-spacing:.3px;line-height:1;margin:4px 0}
+.kpi-sub{font-size:13px;color:var(--muted)}
+.kpi-blue .kpi-value{color:var(--blue)}
+.kpi-red .kpi-value{color:var(--red)}
+.kpi-amber .kpi-value{color:var(--amber)}
+.kpi-green .kpi-value{color:var(--green)}
+
+/* === Chart row =========================================================== */
+.chart-row{
+    display:grid;
+    grid-template-columns: 1.2fr 1fr;
+    gap: var(--card-gap);
+    margin-bottom: var(--section-gap);        /* SPACE BELOW CHARTS ROW */
+}
+.chart-card{padding-bottom: calc(var(--card-pad) + 6px) !important;}
+.chart-title{font-weight:700;color:var(--text);margin-bottom:10px}
+.spark{width:100%;height:118px;overflow:visible}
+.spark-line{fill:none;stroke-linecap:round;stroke-width:2.75}
+.line-a{stroke:var(--blue);filter:drop-shadow(0 1px 0 rgba(59,130,246,.25))}
+.line-b{stroke:#84cc16;filter:drop-shadow(0 1px 0 rgba(132,204,22,.25))}
+.legend{display:flex;gap:8px;margin-top:8px}
+
+/* === Capacity list & progress bars ====================================== */
+.capacity-grid{display:grid;gap:12px}
+.cap-item{display:grid;gap:6px}
+.cap-title{font-weight:600;color:var(--text)}
+.cap-meta{display:flex;justify-content:space-between;font-size:12px;color:var(--muted)}
+.cap-item mat-progress-bar{
+    --mdc-linear-progress-active-indicator-color:var(--primary);
+    --mdc-linear-progress-track-color:#eef2ff;
+    height:10px!important;border-radius:999px;overflow:hidden;
+}
+
+/* === Students by Speciality (horizontal bars) ============================ */
+.hbars{display:grid;gap:10px}
+.hbar-row{display:grid;grid-template-columns:1.1fr 1fr 110px;gap:12px;align-items:center}
+.hbar-label{
+    font-size:13px;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+    display:inline-flex;align-items:center;gap:8px;
+}
+.hbar-label .dot{width:8px;height:8px;border-radius:999px;box-shadow:0 0 0 2px rgba(0,0,0,.03)}
+.hbar-track{
+    position:relative;height:10px;border-radius:999px;overflow:hidden;
+    background:#eef2ff;border:1px solid rgba(99,102,241,.12);
+}
+.hbar-fill{
+    height:100%;background:linear-gradient(90deg,#6366f1,#a5b4fc);
+    box-shadow:inset 0 0 0 1px rgba(255,255,255,.6);
+    transform-origin:left center;transition:width .45s cubic-bezier(.22,.61,.36,1);
+}
+.hbar-value{text-align:right;font-weight:800;color:var(--text)}
+.hbar-value .pct{color:var(--muted);font-weight:600;margin-left:4px}
+
+/* === Group cards ========================================================= */
+.group-grid{
+    display:grid;
+    grid-template-columns:repeat(3,minmax(0,1fr));
+    gap: var(--card-gap);
+    row-gap: calc(var(--card-gap) + 6px);
+    margin-top: var(--section-gap);           /* SPACE ABOVE GROUPS GRID */
+}
+.group-card{padding:14px}
+.group-top{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.group-name{display:flex;align-items:center;gap:10px}
+.group-name h4{margin:0;font-weight:800;letter-spacing:.2px;color:var(--text)}
+.group-specialite{color:var(--muted);font-weight:600}
+.chip{
+    display:inline-flex;align-items:center;justify-content:center;
+    width:28px;height:28px;border-radius:999px;background:#eef2ff;color:#4338ca;
+    font-weight:800;font-size:12px;box-shadow:inset 0 -2px 0 rgba(67,56,202,.08);
+}
+.chip-a{background:#dcfce7;color:#065f46}
+.chip-b{background:#fee2e2;color:#7f1d1d}
+.group-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:12px 0}
+.s-label{font-size:12px;color:var(--muted)}
+.s-value{font-size:18px;font-weight:800;color:var(--text)}
+.group-footer{display:flex;align-items:center;gap:8px;padding-top:10px;border-top:1px dashed rgba(15,23,42,.08)}
+.pill{padding:4px 10px;border-radius:999px;font-weight:700;font-size:12px;background:#eef2ff;color:#1f2937;border:1px solid rgba(99,102,241,.12)}
+.pill.warn{background:#fee2e2;color:#7f1d1d}
+.pill.mute{background:#f3f4f6;color:#374151}
+.status{margin-left:auto;font-weight:800}
+.status.ok{color:var(--green)}
+.status.bad{color:var(--red)}
+/* =========================
+   TEAM — Trainers by Speciality
+   Polished look + better spacing + no horiz. scrollbar
+   ========================= */
+
+.section-card{
+    padding: 16px !important;
+    margin-top: 38px;                    /* plus d’air au-dessus de la section */
+    border-radius: 18px !important;
+}
+
+/* grille responsive, colonnes plus larges et espacement généreux */
+.spec-grid{
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+    gap: 26px !important;                /* espace entre spécialités */
+}
+
+/* carte d’une spécialité : header sticky, scroll vertical only */
+.spec-card{
+    padding: 0 !important;
+    display: grid;
+    grid-template-rows: auto 1fr;
+    max-height: 520px;
+    overflow-y: auto;                    /* <- évite la barre horizontale */
+    overflow-x: hidden;
+    border-radius: 18px !important;
+    background:
+            linear-gradient(180deg, rgba(255,255,255,.98), rgba(255,255,255,.96));
+    box-shadow: var(--card-shadow);
+}
+
+.spec-title{
+    position: sticky; top: 0; z-index: 2;
+    padding: 16px 18px;
+    font-weight: 800; letter-spacing: .2px;
+    border-bottom: 1px dashed rgba(15,23,42,.10);
+    background:
+            linear-gradient(180deg, #fff, rgba(255,255,255,.92));
+    backdrop-filter: saturate(1.1) blur(4px);
+}
+
+/* zone liste = padding interne régulier */
+.spec-card > :not(.spec-title){
+    padding: 12px 14px 16px;
+}
+
+/* lignes formateur : carte douce avec accent à gauche */
+.trainer-row{
+    display: grid;
+    grid-template-columns: 56px 1fr;
+    gap: 12px;
+    align-items: center;
+    margin: 12px 6px;                    /* espace vertical entre lignes */
+    padding: 12px 14px;
+    border-radius: 14px;
+    border: 1px solid var(--card-border);
+    background:
+            linear-gradient(180deg,#ffffff,#f8fafc);
+    box-shadow: 0 1px 0 rgba(15,23,42,.04);
+    transition: transform .16s ease, box-shadow .16s ease, border-color .16s ease;
+    position: relative;
+}
+.trainer-row::before{                   /* petit accent “ring” à gauche */
+    content:"";
+    position:absolute; left:-1px; top:10px; bottom:10px; width:3px;
+    border-radius: 6px;
+    background: linear-gradient(180deg, var(--primary), var(--primary-2));
+    opacity:.45;
+}
+.trainer-row:hover{
+    transform: translateY(-2px);
+    border-color: var(--ring);
+    box-shadow: var(--card-shadow);
+}
+
+/* avatar rond avec halo léger */
+.trainer-row .avatar{
+    width: 50px; height: 50px;
+    border-radius: 999px; object-fit: cover;
+    border: 2px solid #fff;
+    box-shadow: 0 6px 12px rgba(15,23,42,.12);
+    position: relative;
+}
+.trainer-row .avatar::after{
+    content:"";
+    position:absolute; inset:-3px; border-radius:999px; pointer-events:none;
+    background: conic-gradient(from 220deg, var(--primary) 0 35%, transparent 35% 70%, #16a34a 70% 100%);
+    filter: blur(6px); opacity:.22;
+}
+
+/* textes */
+.t-meta .name{ font-weight: 800; color: var(--text); line-height: 1.15; }
+.t-meta .email{
+    display:inline-block;
+    margin-top: 6px;
+    padding: 4px 10px;
+    border-radius: 999px;
+    font-size: 12px;
+    color: #374151;
+    background: var(--surface-2);
+    border: 1px solid rgba(15,23,42,.08);
+}
+
+/* chips des groupes — compact & lisibles */
+.chips{ display:flex; flex-wrap:wrap; gap: 8px; margin-top: 10px; }
+.chips .chip{
+    padding: 4px 8px;
+    font-size: 11px;
+    font-weight: 700;
+    border-radius: 999px;
+    color: #3730a3;
+    background: linear-gradient(180deg,#eef2ff,#e0e7ff);
+    border: 1px solid rgba(99,102,241,.20);
+    white-space: nowrap;                 /* évite le retour à la ligne sur 2 lignes */
+}
+.chips .chip.muted{
+    color: #475569;
+    background: linear-gradient(180deg,#f3f4f6,#e5e7eb);
+    border: 1px solid rgba(15,23,42,.08);
+}
+
+/* scrollbars (soft) */
+.spec-card::-webkit-scrollbar{ width: 10px; }
+.spec-card::-webkit-scrollbar-thumb{
+    background: linear-gradient(#c7d2fe,#93c5fd);
+    border-radius: 999px;
+}
+.spec-card{ scrollbar-width: thin; scrollbar-color: #c7d2fe transparent; }
+
+/* responsive : colonnes qui respirent mieux */
+@media (max-width: 1200px){
+    .spec-grid{ grid-template-columns: repeat(2, minmax(320px, 1fr)); gap: 22px !important; }
+}
+@media (max-width: 720px){
+    .spec-grid{ grid-template-columns: 1fr; }
+    .spec-card{ max-height: none; }
+}
+/* FIX: chips de classes dans la liste des formateurs
+   (prend le pas sur la .chip circulaire 28x28) */
+.trainer-row .chips .chip{
+    width: auto !important;
+    height: auto !important;
+    min-height: 26px;                    /* hauteur visuelle */
+    padding: 4px 10px !important;        /* espace interne */
+    border-radius: 999px !important;     /* pilule */
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;                      /* évite l’écrasement vertical */
+    white-space: nowrap;                 /* une seule ligne */
+    font-size: 12px;                     /* lisible */
+    box-shadow: none;                    /* optionnel : plus plat */
+}
+
+/* variante “No class” / grisée */
+.trainer-row .chips .chip.muted{
+    width: auto !important;
+    height: auto !important;
+    min-height: 26px;
+    padding: 4px 10px !important;
+    border-radius: 999px !important;
+}
+/* === Center "Trainers by Speciality" ==================================== */
+/* Centre le grid et fixe une largeur max pour empêcher qu'il s'étire bord à bord */
+.section-card .spec-grid{
+    display: grid;
+    /* colonnes centrées de largeur “carte” */
+    grid-template-columns: repeat(auto-fit, minmax(320px, 360px));
+    justify-content: center;            /* centre les colonnes */
+    gap: 24px;                          /* espace entre cartes */
+    max-width: 1200px;                  /* largeur max du bloc centré */
+    margin-inline: auto;                /* centre dans la page */
+    padding-block: 8px;
+}
+
+/* Chaque carte de spécialité garde une largeur de carte (utile pour le centrage) */
+.section-card .spec-card{
+    width: 100%;
+    max-width: 360px;
+}
+
+/* Sur écrans plus petits, on laisse respirer en s’autoadaptant */
+@media (max-width: 1200px){
+    .section-card .spec-grid{
+        max-width: 100%;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    }
+}
